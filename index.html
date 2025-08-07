@@ -104,12 +104,11 @@
         // *** IMPORTANTE: Cole sua API Key do Google AI Studio aqui ***
         // Para obter sua chave: https://aistudio.google.com/app/apikey
         // Mantenha esta chave em segredo em ambientes de produção.
-        const API_KEY = "YOUR_API_KEY_HERE"; // Substitua "YOUR_API_KEY_HERE" pela sua chave real!
+        const API_KEY = "YOUR_API_KEY_HERE"; // <--- SUBSTITUA "YOUR_API_KEY_HERE" PELA SUA CHAVE REAL AQUI!
 
         // Referências aos elementos do DOM
         const quizThemeInput = document.getElementById('quiz-theme');
         const quizDifficultySelect = document.getElementById('quiz-difficulty');
-        // const apiKeyInput = document.getElementById('api-key-input'); // Removido, pois a chave agora é hardcoded
         const generateQuizBtn = document.getElementById('generate-quiz-btn');
         const loadingIndicator = document.getElementById('loading-indicator');
         const quizContainer = document.getElementById('quiz-container');
@@ -166,13 +165,7 @@
         async function generateQuiz() {
             const theme = quizThemeInput.value.trim();
             const difficulty = quizDifficultySelect.value;
-            // A API_KEY agora é uma constante definida no topo do script.
-            // const apiKey = apiKeyInput.value.trim(); // Removido
-
-            if (!theme) {
-                showError('Por favor, digite um tema para o quiz.');
-                return;
-            }
+            
             // Verifica se a API_KEY foi definida no código
             if (!API_KEY || API_KEY === "YOUR_API_KEY_HERE") {
                 showError('Por favor, insira sua Chave de API do Google AI Studio diretamente no código JavaScript (variável API_KEY).');
