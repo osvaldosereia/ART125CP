@@ -1,134 +1,242 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meus Links</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #4f46e5;
-      --bg: #f9fafb;
-      --text: #1f2937;
-      --card: #ffffff;
-      --border: #e5e7eb;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-    header {
-      background: var(--primary);
-      padding: 16px;
-      color: white;
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 800;
-    }
-    nav {
-      display: flex;
-      overflow-x: auto;
-      background: #eef2ff;
-      padding: 12px;
-      justify-content: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    nav button {
-      background: white;
-      border: 1px solid var(--primary);
-      color: var(--primary);
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    nav button:hover {
-      background: var(--primary);
-      color: white;
-    }
-    main {
-      padding: 24px;
-      max-width: 800px;
-      margin: auto;
-    }
-    .categoria {
-      display: none;
-      flex-direction: column;
-      gap: 20px;
-      animation: fadeIn 0.3s ease-in-out;
-    }
-    .categoria.active {
-      display: flex;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    }
-    .card h3 { font-size: 1.1rem; margin-bottom: 10px; }
-    .card ul { list-style: none; }
-    .card li { margin-bottom: 6px; }
-    .card a {
-      text-decoration: none;
-      color: var(--primary);
-      font-weight: 500;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Minimalista</title>
+    <!-- Inclui o Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Define a fonte Inter para todo o corpo do documento */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Estilos para a barra de rolagem (opcional, para um visual mais limpo) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* gray-300 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* gray-400 */
+        }
+    </style>
 </head>
-<body>
-  <header>📲 Meus Links</header>
-  <nav id="menu">
-    <button onclick="showCategoria(0)">Categoria 1</button>
-    <button onclick="showCategoria(1)">Categoria 2</button>
-    <button onclick="showCategoria(2)">Categoria 3</button>
-    <button onclick="showCategoria(3)">Categoria 4</button>
-    <button onclick="showCategoria(4)">Categoria 5</button>
-  </nav>
-  <main>
-    <div class="categoria active">
-      <div class="card"><h3>Subcategoria 1.1</h3><ul><li><a href="#">Link 1</a></li><li><a href="#">Link 2</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 1.2</h3><ul><li><a href="#">Link 3</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 1.3</h3><ul><li><a href="#">Link 4</a></li></ul></div>
+<body class="bg-gray-100 text-gray-800 antialiased flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+    <!-- Contêiner principal do aplicativo -->
+    <div class="bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-4xl flex flex-col lg:flex-row h-[90vh] lg:h-[80vh]">
+
+        <!-- Seção de Navegação de Categorias (Menu Lateral/Superior) -->
+        <nav class="w-full lg:w-1/3 bg-gray-50 p-4 sm:p-6 border-b lg:border-r border-gray-200 flex flex-col">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center lg:text-left">Categorias</h1>
+            <ul id="category-list" class="flex flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto pb-4 lg:pb-0 -mx-2 lg:-mx-0">
+                <!-- As categorias serão injetadas aqui pelo JavaScript -->
+            </ul>
+        </nav>
+
+        <!-- Seção de Conteúdo Principal (Subcategorias e Links) -->
+        <main class="flex-1 p-4 sm:p-6 overflow-y-auto">
+            <h2 id="main-title" class="text-2xl font-semibold text-gray-900 mb-6">Selecione uma categoria</h2>
+            <div id="content-display" class="space-y-8">
+                <!-- O conteúdo das subcategorias e links será injetado aqui pelo JavaScript -->
+                <p class="text-gray-500">Clique em uma categoria no menu lateral para ver seus detalhes.</p>
+            </div>
+        </main>
+
     </div>
-    <div class="categoria">
-      <div class="card"><h3>Subcategoria 2.1</h3><ul><li><a href="#">Link 1</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 2.2</h3><ul><li><a href="#">Link 2</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 2.3</h3><ul><li><a href="#">Link 3</a></li></ul></div>
-    </div>
-    <div class="categoria">
-      <div class="card"><h3>Subcategoria 3.1</h3><ul><li><a href="#">Link 1</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 3.2</h3><ul><li><a href="#">Link 2</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 3.3</h3><ul><li><a href="#">Link 3</a></li></ul></div>
-    </div>
-    <div class="categoria">
-      <div class="card"><h3>Subcategoria 4.1</h3><ul><li><a href="#">Link 1</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 4.2</h3><ul><li><a href="#">Link 2</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 4.3</h3><ul><li><a href="#">Link 3</a></li></ul></div>
-    </div>
-    <div class="categoria">
-      <div class="card"><h3>Subcategoria 5.1</h3><ul><li><a href="#">Link 1</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 5.2</h3><ul><li><a href="#">Link 2</a></li></ul></div>
-      <div class="card"><h3>Subcategoria 5.3</h3><ul><li><a href="#">Link 3</a></li></ul></div>
-    </div>
-  </main>
-  <script>
-    function showCategoria(index) {
-      const todas = document.querySelectorAll('.categoria');
-      todas.forEach((el, i) => {
-        el.classList.toggle('active', i === index);
-      });
-    }
-  </script>
+
+    <script>
+        // Dados do site: categorias, subcategorias e links
+        const categoriesData = [
+            {
+                id: 'tecnologia',
+                name: 'Tecnologia',
+                subcategories: [
+                    {
+                        id: 'ia',
+                        name: 'Inteligência Artificial',
+                        links: [
+                            { title: 'O Futuro da IA', url: 'https://gemini.google.com/app' },
+                            { title: 'Aplicações Práticas de IA', url: 'https://gemini.google.com/app' },
+                            { title: 'Ética em IA', url: 'https://gemini.google.com/app' }
+                        ]
+                    },
+                    {
+                        id: 'dev-web',
+                        name: 'Desenvolvimento Web',
+                        links: [
+                            { title: 'Frameworks Modernos', url: 'https://gemini.google.com/app' },
+                            { title: 'Melhores Práticas de UX/UI', url: 'https://gemini.google.com/app' },
+                            { title: 'Segurança Web Essencial', url: 'https://gemini.google.com/app' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'saude-bem-estar',
+                name: 'Saúde e Bem-Estar',
+                subcategories: [
+                    {
+                        id: 'nutricao',
+                        name: 'Nutrição',
+                        links: [
+                            { title: 'Alimentação Balanceada', url: 'https://gemini.google.com/app' },
+                            { title: 'Dietas Sustentáveis', url: 'https://gemini.google.com/app' }
+                        ]
+                    },
+                    {
+                        id: 'fitness',
+                        name: 'Fitness',
+                        links: [
+                            { title: 'Rotinas de Exercício', url: 'https://gemini.google.com/app' },
+                            { title: 'Saúde Mental e Exercício', url: 'https://gemini.google.com/app' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'arte-cultura',
+                name: 'Arte e Cultura',
+                subcategories: [
+                    {
+                        id: 'literatura',
+                        name: 'Literatura',
+                        links: [
+                            { title: 'Clássicos da Literatura', url: 'https://gemini.google.com/app' },
+                            { title: 'Autores Contemporâneos', url: 'https://gemini.google.com/app' }
+                        ]
+                    },
+                    {
+                        id: 'cinema',
+                        name: 'Cinema',
+                        links: [
+                            { title: 'Filmes Independentes', url: 'https://gemini.google.com/app' },
+                            { title: 'História do Cinema', url: 'https://gemini.google.com/app' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'viagens-aventura',
+                name: 'Viagens e Aventura',
+                subcategories: [
+                    {
+                        id: 'destinos',
+                        name: 'Destinos Exóticos',
+                        links: [
+                            { title: 'Guia de Viagem para a Ásia', url: 'https://gemini.google.com/app' },
+                            { title: 'Aventuras na América do Sul', url: 'https://gemini.google.com/app' }
+                        ]
+                    },
+                    {
+                        id: 'dicas-viagem',
+                        name: 'Dicas de Viagem',
+                        links: [
+                            { title: 'Como Viajar com Pouco', url: 'https://gemini.google.com/app' },
+                            { title: 'Segurança em Viagens', url: 'https://gemini.google.com/app' }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Referências aos elementos do DOM
+        const categoryList = document.getElementById('category-list');
+        const mainTitle = document.getElementById('main-title');
+        const contentDisplay = document.getElementById('content-display');
+
+        let activeCategoryId = null; // Para controlar a categoria ativa
+
+        /**
+         * Renderiza as categorias na barra de navegação.
+         */
+        function renderCategories() {
+            categoryList.innerHTML = ''; // Limpa a lista existente
+            categoriesData.forEach(category => {
+                const li = document.createElement('li');
+                li.className = `mb-2 lg:mb-3 last:mb-0 flex-shrink-0 lg:flex-shrink-1 px-2 lg:px-0`; // Adiciona flex-shrink-0 para evitar encolhimento em mobile
+                li.innerHTML = `
+                    <button id="btn-${category.id}" class="category-btn w-full text-left p-3 rounded-lg transition-all duration-200 ease-in-out
+                        hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+                        ${activeCategoryId === category.id ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700'}"
+                        data-category-id="${category.id}">
+                        <span class="font-medium">${category.name}</span>
+                    </button>
+                `;
+                categoryList.appendChild(li);
+            });
+
+            // Adiciona event listeners aos botões de categoria
+            document.querySelectorAll('.category-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const categoryId = event.currentTarget.dataset.categoryId;
+                    displayCategoryContent(categoryId);
+                });
+            });
+        }
+
+        /**
+         * Exibe o conteúdo (subcategorias e links) da categoria selecionada.
+         * @param {string} categoryId - O ID da categoria a ser exibida.
+         */
+        function displayCategoryContent(categoryId) {
+            const selectedCategory = categoriesData.find(cat => cat.id === categoryId);
+
+            if (selectedCategory) {
+                mainTitle.textContent = selectedCategory.name;
+                contentDisplay.innerHTML = ''; // Limpa o conteúdo anterior
+
+                selectedCategory.subcategories.forEach(sub => {
+                    const subcategoryDiv = document.createElement('div');
+                    subcategoryDiv.className = 'bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200';
+                    subcategoryDiv.innerHTML = `
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3">${sub.name}</h3>
+                        <ul class="space-y-2">
+                            ${sub.links.map(link => `
+                                <li>
+                                    <a href="${link.url}" target="_blank" rel="noopener noreferrer"
+                                       class="block p-2 rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200
+                                              flex items-center justify-between group">
+                                        <span class="font-medium">${link.title}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+                    contentDisplay.appendChild(subcategoryDiv);
+                });
+
+                // Atualiza o estado da categoria ativa e re-renderiza as categorias para aplicar o estilo
+                activeCategoryId = categoryId;
+                renderCategories();
+            } else {
+                mainTitle.textContent = 'Categoria não encontrada';
+                contentDisplay.innerHTML = '<p class="text-gray-500">Ocorreu um erro ao carregar o conteúdo.</p>';
+                activeCategoryId = null;
+                renderCategories();
+            }
+        }
+
+        // Inicializa o site ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategories();
+            // Opcional: exiba o conteúdo da primeira categoria por padrão
+            if (categoriesData.length > 0) {
+                displayCategoryContent(categoriesData[0].id);
+            }
+        });
+    </script>
 </body>
 </html>
