@@ -204,6 +204,44 @@
         }
 
         /**
+         * Função auxiliar para tentar fazer fetch com exponential backoff.
+         * @param {string} url - URL para a requisição.
+         * @param {Object} options - Opções para a requisição fetch.
+         * @param {number} retries - Número máximo de tentativas.
+         * @param {number} delay - Atraso inicial em milissegundos.
+         * @returns {Promise<Response>} A resposta da requisição bem-sucedida.
+         * @throws {Error} Se todas as tentativas falharem ou se houver um erro não-retentável.
+         */
+        async function retryFetch(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    } else {
+                        const errorBody = await response.text();
+                        console.warn(`Tentativa ${i + 1} falhou com status ${response.status}: ${response.statusText}. Detalhes: ${errorBody}`);
+                        // Tentar novamente em caso de erros de servidor ou "Too Many Requests"
+                        if (response.status === 429 || response.status >= 500) {
+                            await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+                        } else {
+                            // Para outros erros (ex: 400, 401, 403, 404), não tentar novamente, lançar imediatamente
+                            throw new Error(`Erro na API: ${response.status} - ${response.statusText}. Detalhes: ${errorBody}`);
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Erro na tentativa ${i + 1} de fetch:`, error);
+                    if (i < retries - 1) {
+                        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
+                    } else {
+                        throw error; // Lançar erro após todas as tentativas
+                    }
+                }
+            }
+            throw new Error('Todas as tentativas de fetch falharam.');
+        }
+
+        /**
          * Busca vídeos no YouTube (simulado via LLM) com base nos termos selecionados.
          */
         async function searchYouTubeVideos() {
@@ -247,15 +285,12 @@
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             try {
-                const response = await fetch(apiUrl, {
+                // Usar a função retryFetch para a chamada da API
+                const response = await retryFetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Erro na API: ${response.statusText}`);
-                }
 
                 const result = await response.json();
 
@@ -263,9 +298,15 @@
                     result.candidates[0].content && result.candidates[0].content.parts &&
                     result.candidates[0].content.parts.length > 0) {
                     const json = result.candidates[0].content.parts[0].text;
-                    const videos = JSON.parse(json);
-                    renderVideoResults(videos);
+                    try {
+                        const videos = JSON.parse(json);
+                        renderVideoResults(videos);
+                    } catch (jsonError) {
+                        console.error('Erro ao fazer parse do JSON da API:', jsonError, 'JSON recebido:', json);
+                        videoResultsDiv.innerHTML = `<p class="text-red-500">Erro ao processar a resposta da API (JSON inválido). Por favor, tente novamente.</p>`;
+                    }
                 } else {
+                    console.warn('Resposta da API não contém candidatos ou conteúdo esperado:', result);
                     videoResultsDiv.innerHTML = '<p class="text-gray-500">Nenhum vídeo encontrado para os termos selecionados. Tente outros termos.</p>';
                 }
             } catch (error) {
