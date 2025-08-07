@@ -101,10 +101,10 @@
     </div>
 
     <script>
-        // *** IMPORTANTE: AIzaSyCOf8eoIZVQesyXh32VBFje9yrTTD67AsU ***
+        // *** IMPORTANTE: Cole sua API Key do Google AI Studio aqui ***
         // Para obter sua chave: https://aistudio.google.com/app/apikey
         // Mantenha esta chave em segredo em ambientes de produção.
-        const API_KEY = "YOUR_API_KEY_HERE"; // <--- SUBSTITUA "YOUR_API_KEY_HERE" PELA SUA CHAVE REAL AQUI!
+        const API_KEY = "AIzaSyCOf8eoIZVQesyXh32VBFje9yrTTD67AsU"; // Sua chave de API foi inserida aqui!
 
         // Referências aos elementos do DOM
         const quizThemeInput = document.getElementById('quiz-theme');
@@ -167,8 +167,8 @@
             const difficulty = quizDifficultySelect.value;
             
             // Verifica se a API_KEY foi definida no código
-            if (!API_KEY || API_KEY === "YOUR_API_KEY_HERE") {
-                showError('Por favor, insira sua Chave de API do Google AI Studio diretamente no código JavaScript (variável API_KEY).');
+            if (!API_KEY || API_KEY === "YOUR_API_KEY_HERE") { // Este check agora é apenas para o caso de a chave não ter sido substituída
+                showError('Erro de configuração: A chave de API não foi inserida corretamente no código.');
                 return;
             }
 
