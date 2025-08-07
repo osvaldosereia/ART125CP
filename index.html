@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site Minimalista</title>
+    <title>Site Buscador Minimalista</title>
     <!-- Inclui o Tailwind CSS para estilização moderna e responsiva -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -29,26 +29,54 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8; /* gray-400 */
         }
+        /* Estilo para o dropdown */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem; /* Espaço para o ícone da seta */
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
     <!-- Contêiner principal do aplicativo -->
     <div class="bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-4xl flex flex-col lg:flex-row h-[90vh] lg:h-[80vh]">
 
-        <!-- Seção de Navegação de Categorias (Menu Lateral/Superior) -->
+        <!-- Seção de Navegação de Categorias (Dropdowns) -->
         <nav class="w-full lg:w-1/3 bg-gray-50 p-4 sm:p-6 border-b lg:border-r border-gray-200 flex flex-col">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center lg:text-left">Categorias</h1>
-            <ul id="category-list" class="flex flex-row lg:flex-col overflow-x-auto lg:overflow-y-auto pb-4 lg:pb-0 -mx-2 lg:-mx-0">
-                <!-- As categorias serão injetadas aqui pelo JavaScript -->
-            </ul>
+            <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center lg:text-left">Navegar</h1>
+
+            <div class="mb-4">
+                <label for="category-select" class="block text-sm font-medium text-gray-700 mb-2">Selecione uma Categoria:</label>
+                <select id="category-select" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white">
+                    <option value="">-- Selecionar Categoria --</option>
+                    <!-- As categorias serão injetadas aqui pelo JavaScript -->
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label for="subcategory-select" class="block text-sm font-medium text-gray-700 mb-2">Selecione uma Subcategoria:</label>
+                <select id="subcategory-select" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white" disabled>
+                    <option value="">-- Selecionar Subcategoria --</option>
+                    <!-- As subcategorias serão injetadas aqui pelo JavaScript -->
+                </select>
+            </div>
         </nav>
 
-        <!-- Seção de Conteúdo Principal (Subcategorias e Links) -->
+        <!-- Seção de Conteúdo Principal (Links) -->
         <main class="flex-1 p-4 sm:p-6 overflow-y-auto">
-            <h2 id="main-title" class="text-2xl font-semibold text-gray-900 mb-6">Selecione uma categoria</h2>
+            <!-- Título principal da categoria selecionada -->
+            <h2 id="main-title" class="text-2xl font-semibold text-gray-900 mb-2"></h2>
+            <!-- Subtítulo para a subcategoria selecionada -->
+            <h3 id="subcategories-intro" class="text-xl text-gray-700 mb-6 pb-2 border-b border-gray-200"></h3>
+
             <div id="content-display" class="space-y-8">
-                <!-- O conteúdo das subcategorias e links será injetado aqui pelo JavaScript -->
-                <p class="text-gray-500">Clique em uma categoria no menu lateral para ver seus detalhes.</p>
+                <!-- O conteúdo dos links será injetado aqui pelo JavaScript -->
+                <p class="text-gray-500">Use os menus suspensos para selecionar uma categoria e uma subcategoria.</p>
             </div>
         </main>
 
@@ -150,92 +178,130 @@
         ];
 
         // Referências aos elementos do DOM
-        const categoryList = document.getElementById('category-list');
+        const categorySelect = document.getElementById('category-select');
+        const subcategorySelect = document.getElementById('subcategory-select');
         const mainTitle = document.getElementById('main-title');
+        const subcategoriesIntro = document.getElementById('subcategories-intro');
         const contentDisplay = document.getElementById('content-display');
 
-        let activeCategoryId = null; // Para controlar a categoria ativa
-
         /**
-         * Renderiza as categorias na barra de navegação.
+         * Popula o dropdown de categorias.
          */
-        function renderCategories() {
-            categoryList.innerHTML = ''; // Limpa a lista existente
+        function populateCategoryDropdown() {
+            // Limpa opções existentes, mantendo a opção padrão
+            categorySelect.innerHTML = '<option value="">-- Selecionar Categoria --</option>';
             categoriesData.forEach(category => {
-                const li = document.createElement('li');
-                li.className = `mb-2 lg:mb-3 last:mb-0 flex-shrink-0 lg:flex-shrink-1 px-2 lg:px-0`; // Adiciona flex-shrink-0 para evitar encolhimento em mobile
-                li.innerHTML = `
-                    <button id="btn-${category.id}" class="category-btn w-full text-left p-3 rounded-lg transition-all duration-200 ease-in-out
-                        hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-                        ${activeCategoryId === category.id ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-700'}"
-                        data-category-id="${category.id}">
-                        <span class="font-medium">${category.name}</span>
-                    </button>
-                `;
-                categoryList.appendChild(li);
-            });
-
-            // Adiciona event listeners aos botões de categoria
-            document.querySelectorAll('.category-btn').forEach(button => {
-                button.addEventListener('click', (event) => {
-                    const categoryId = event.currentTarget.dataset.categoryId;
-                    displayCategoryContent(categoryId);
-                });
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
             });
         }
 
         /**
-         * Exibe o conteúdo (subcategorias e links) da categoria selecionada.
-         * @param {string} categoryId - O ID da categoria a ser exibida.
+         * Popula o dropdown de subcategorias com base na categoria selecionada.
+         * @param {string} selectedCategoryId - O ID da categoria selecionada.
          */
-        function displayCategoryContent(categoryId) {
-            const selectedCategory = categoriesData.find(cat => cat.id === categoryId);
+        function populateSubcategoryDropdown(selectedCategoryId) {
+            // Limpa opções existentes, mantendo a opção padrão
+            subcategorySelect.innerHTML = '<option value="">-- Selecionar Subcategoria --</option>';
+            subcategorySelect.disabled = true; // Desabilita por padrão
 
-            if (selectedCategory) {
-                mainTitle.textContent = selectedCategory.name;
-                contentDisplay.innerHTML = ''; // Limpa o conteúdo anterior
+            const selectedCategory = categoriesData.find(cat => cat.id === selectedCategoryId);
 
+            if (selectedCategory && selectedCategory.subcategories.length > 0) {
                 selectedCategory.subcategories.forEach(sub => {
-                    const subcategoryDiv = document.createElement('div');
-                    subcategoryDiv.className = 'bg-white p-4 sm:p-5 rounded-lg shadow-sm border border-gray-200';
-                    subcategoryDiv.innerHTML = `
-                        <h3 class="text-xl font-semibold text-gray-800 mb-3">${sub.name}</h3>
-                        <ul class="space-y-2">
-                            ${sub.links.map(link => `
-                                <li>
-                                    <a href="${link.url}" target="_blank" rel="noopener noreferrer"
-                                       class="block p-2 rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200
-                                              flex items-center justify-between group">
-                                        <span class="font-medium">${link.title}</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                        </svg>
-                                    </a>
-                                </li>
-                            `).join('')}
-                        </ul>
-                    `;
-                    contentDisplay.appendChild(subcategoryDiv);
+                    const option = document.createElement('option');
+                    option.value = sub.id;
+                    option.textContent = sub.name;
+                    subcategorySelect.appendChild(option);
                 });
-
-                // Atualiza o estado da categoria ativa e re-renderiza as categorias para aplicar o estilo
-                activeCategoryId = categoryId;
-                renderCategories();
-            } else {
-                mainTitle.textContent = 'Categoria não encontrada';
-                contentDisplay.innerHTML = '<p class="text-gray-500">Ocorreu um erro ao carregar o conteúdo.</p>';
-                activeCategoryId = null;
-                renderCategories();
+                subcategorySelect.disabled = false; // Habilita se houver subcategorias
             }
         }
+
+        /**
+         * Exibe os links da subcategoria selecionada.
+         * @param {string} selectedCategoryId - O ID da categoria selecionada.
+         * @param {string} selectedSubcategoryId - O ID da subcategoria selecionada.
+         */
+        function displayContent(selectedCategoryId, selectedSubcategoryId) {
+            mainTitle.textContent = ''; // Limpa o título da categoria
+            subcategoriesIntro.textContent = ''; // Limpa o subtítulo da subcategoria
+            contentDisplay.innerHTML = ''; // Limpa o conteúdo anterior
+
+            const selectedCategory = categoriesData.find(cat => cat.id === selectedCategoryId);
+            if (!selectedCategory) {
+                contentDisplay.innerHTML = '<p class="text-gray-500">Selecione uma categoria válida.</p>';
+                return;
+            }
+
+            const selectedSubcategory = selectedCategory.subcategories.find(sub => sub.id === selectedSubcategoryId);
+            if (!selectedSubcategory) {
+                contentDisplay.innerHTML = '<p class="text-gray-500">Selecione uma subcategoria válida.</p>';
+                return;
+            }
+
+            // Define o título da categoria
+            mainTitle.textContent = selectedCategory.name;
+            // Define o subtítulo da subcategoria
+            subcategoriesIntro.textContent = `Títulos em: ${selectedSubcategory.name}`;
+
+            // Renderiza os links
+            if (selectedSubcategory.links.length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'space-y-2';
+                selectedSubcategory.links.forEach(link => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <a href="${link.url}" target="_blank" rel="noopener noreferrer"
+                           class="block p-2 rounded-md text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200
+                                  flex items-center justify-between group">
+                            <span class="font-medium">${link.title}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
+                    `;
+                    ul.appendChild(li);
+                });
+                contentDisplay.appendChild(ul);
+            } else {
+                contentDisplay.innerHTML = '<p class="text-gray-500">Nenhum título encontrado para esta subcategoria.</p>';
+            }
+        }
+
+        // Event listener para a mudança na seleção da categoria
+        categorySelect.addEventListener('change', (event) => {
+            const selectedCategoryId = event.target.value;
+            populateSubcategoryDropdown(selectedCategoryId);
+            // Limpa o conteúdo ao mudar a categoria, antes de selecionar a subcategoria
+            mainTitle.textContent = selectedCategoryId ? categoriesData.find(cat => cat.id === selectedCategoryId).name : '';
+            subcategoriesIntro.textContent = selectedCategoryId ? 'Selecione uma subcategoria para ver os títulos.' : '';
+            contentDisplay.innerHTML = selectedCategoryId ? '<p class="text-gray-500">Selecione uma subcategoria para ver os títulos.</p>' : '<p class="text-gray-500">Use os menus suspensos para selecionar uma categoria e uma subcategoria.</p>';
+            subcategorySelect.value = ''; // Reseta a subcategoria
+        });
+
+        // Event listener para a mudança na seleção da subcategoria
+        subcategorySelect.addEventListener('change', (event) => {
+            const selectedCategoryId = categorySelect.value;
+            const selectedSubcategoryId = event.target.value;
+            if (selectedCategoryId && selectedSubcategoryId) {
+                displayContent(selectedCategoryId, selectedSubcategoryId);
+            } else {
+                mainTitle.textContent = selectedCategoryId ? categoriesData.find(cat => cat.id === selectedCategoryId).name : '';
+                subcategoriesIntro.textContent = selectedCategoryId ? 'Selecione uma subcategoria para ver os títulos.' : '';
+                contentDisplay.innerHTML = selectedCategoryId ? '<p class="text-gray-500">Selecione uma subcategoria para ver os títulos.</p>' : '<p class="text-gray-500">Use os menus suspensos para selecionar uma categoria e uma subcategoria.</p>';
+            }
+        });
 
         // Inicializa o site ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
-            renderCategories();
-            // Opcional: exiba o conteúdo da primeira categoria por padrão
-            if (categoriesData.length > 0) {
-                displayCategoryContent(categoriesData[0].id);
-            }
+            populateCategoryDropdown();
+            // Define o estado inicial do conteúdo
+            mainTitle.textContent = '';
+            subcategoriesIntro.textContent = '';
+            contentDisplay.innerHTML = '<p class="text-gray-500">Use os menus suspensos para selecionar uma categoria e uma subcategoria.</p>';
         });
     </script>
 </body>
