@@ -3,341 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Quiz Infinito</title>
-    <!-- Inclui o Tailwind CSS para estilização moderna e responsiva -->
+    <title>Violação Sexual e Importunação Sexual - Arts. 215 e 215-A do CP</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* Define a fonte Inter para todo o corpo do documento */
+        /* Estilo para garantir que a rolagem seja suave */
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
-        /* Estilos para a barra de rolagem (opcional, para um visual mais limpo) */
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* Estilo para as seções de conteúdo da landing page */
+        .content-section {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+            border-bottom: 1px solid #e5e7eb;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
+        /* Container para tornar as tabelas responsivas */
+        .responsive-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
+            border-radius: 0.5rem; /* Bordas arredondadas para o container */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; /* gray-300 */
-            border-radius: 10px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Largura mínima para evitar que a tabela quebre muito */
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; /* gray-400 */
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px; /* Aumentar o padding para melhor leitura */
+            text-align: left;
         }
-        /* Estilo para o dropdown */
-        select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='currentColor'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 0.75rem center;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem; /* Espaço para o ícone da seta */
+        th {
+            background-color: #f8fafc; /* Um cinza mais claro */
+        }
+        pre {
+            background-color: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #e2e8f0;
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
-    <!-- Contêiner principal do aplicativo -->
-    <div class="bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-2xl p-6 sm:p-8 flex flex-col items-center">
+<body class="bg-gray-50 text-gray-800">
 
-        <h1 class="text-3xl font-bold text-gray-900 mb-6 text-center">Gerador de Quiz Infinito</h1>
+    <!-- Container Principal da Landing Page -->
+    <main id="landing-page-container">
+        <!-- Seção 1: Título -->
+        <section class="content-section p-6 md:p-12 text-center">
+            <h1 class="text-3xl md:text-5xl font-bold text-blue-600 mb-4">Apostila Didática de Direito Penal</h1>
+            <h2 class="text-2xl md:text-4xl text-gray-800 mb-10">Violação Sexual mediante Fraude e Importunação Sexual (Arts. 215 e 215-A)</h2>
+        </section>
 
-        <!-- Seção de Entrada de Tema -->
-        <div class="w-full mb-4">
-            <label for="quiz-theme" class="block text-sm font-medium text-gray-700 mb-2">Escolha um tema:</label>
-            <input type="text" id="quiz-theme" placeholder="Digite o tema aqui..."
-                   class="block w-full px-4 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white">
-        </div>
-
-        <!-- Seção de Nível de Dificuldade -->
-        <div class="w-full mb-6">
-            <label for="quiz-difficulty" class="block text-sm font-medium text-gray-700 mb-2">Selecione o Nível de Dificuldade:</label>
-            <select id="quiz-difficulty" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm bg-white">
-                <option value="FÁCIL">FÁCIL</option>
-                <option value="MÉDIO">MÉDIO</option>
-                <option value="DIFÍCIL" selected>DIFÍCIL</option>
-                <option value="MESTRE DOS MAGOS">MESTRE DOS MAGOS</option>
-            </select>
-        </div>
-
-        <!-- Botão Gerar Quiz -->
-        <button id="generate-quiz-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md shadow-lg transition-colors duration-200 mb-6">
-            Gerar Quiz
-        </button>
-
-        <!-- Indicador de Carregamento -->
-        <div id="loading-indicator" class="text-center text-blue-600 hidden mb-6">
-            <p>Gerando seu quiz, por favor aguarde...</p>
-            <div class="mt-2 animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        </div>
-
-        <!-- Seção do Quiz -->
-        <div id="quiz-container" class="w-full hidden">
-            <p class="text-lg font-semibold text-gray-800 mb-4" id="quiz-question"></p>
-            <div id="quiz-options" class="space-y-3 mb-6">
-                <!-- Opções serão injetadas aqui -->
+        <!-- Seção 2: Visão Geral - Art. 215 -->
+        <section class="content-section p-6 md:p-12">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">1. VISÃO GERAL DOS ARTIGOS</h2>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Art. 215 - Violação Sexual mediante Fraude</h3>
+                    <div class="space-y-4 text-lg">
+                        <p><strong>Bem Jurídico Protegido:</strong> Liberdade e dignidade sexual, o direito de dispor do próprio corpo de acordo com sua vontade livre e não viciada.</p>
+                        <p><strong>Núcleo do Tipo:</strong> "Ter" conjunção carnal ou "praticar" outro ato libidinoso, utilizando "fraude" ou "outro meio que impeça ou dificulte a livre manifestação de vontade da vítima".</p>
+                        <p><strong>Pena:</strong> Reclusão de 2 a 6 anos. Se houver fim de obter vantagem econômica, aplica-se também multa.</p>
+                        <p><strong>Classificação:</strong> Crime comum, material, comissivo, plurissubsistente (admite tentativa).</p>
+                    </div>
+                </div>
             </div>
-            <div id="quiz-feedback" class="p-3 rounded-lg text-white text-center font-medium mb-6 hidden">
-                <!-- Feedback de resposta (correto/errado) e justificativa -->
+        </section>
+
+        <!-- Seção 3: Visão Geral - Art. 215-A -->
+        <section class="content-section p-6 md:p-12">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Art. 215-A - Importunação Sexual</h3>
+                    <div class="space-y-4 text-lg">
+                        <p><strong>Bem Jurídico Protegido:</strong> Liberdade e dignidade sexual, contra atos libidinosos não consentidos de menor gravidade.</p>
+                        <p><strong>Núcleo do Tipo:</strong> "Praticar" ato libidinoso contra alguém e sem a sua anuência, com o objetivo de satisfazer a própria lascívia ou a de terceiro.</p>
+                        <p><strong>Pena:</strong> Reclusão de 1 a 5 anos.</p>
+                        <p><strong>Classificação:</strong> Crime comum, material, subsidiário ("se o ato não constitui crime mais grave").</p>
+                    </div>
+                </div>
             </div>
-            <!-- Botão Próximo Quiz -->
-            <button id="next-quiz-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md shadow-lg transition-colors duration-200" disabled>
-                Próximo Quiz
-            </button>
-        </div>
+        </section>
 
-        <!-- Mensagem de Erro -->
-        <div id="error-message" class="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg hidden w-full">
-            <p class="font-bold">Erro!</p>
-            <p id="error-text"></p>
-        </div>
+        <!-- Seção 4: Checklist Processual -->
+        <section class="content-section p-6 md:p-12">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">2. CHECKLIST PROCESSUAL</h2>
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Ação Penal e Procedibilidade</h3>
+                        <p class="text-lg bg-gray-100 p-4 rounded-md border-l-4 border-blue-500">Após a Lei 13.718/2018, a ação penal para AMBOS os crimes é <strong>Pública Incondicionada</strong>.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Benefícios e Rito</h3>
+                        <div class="responsive-table-container bg-white">
+                            <table>
+                                <thead><tr><th>Instituto</th><th>Art. 215 (Fraude)</th><th>Art. 215-A (Importunação)</th></tr></thead>
+                                <tbody>
+                                    <tr><td><strong>Rito</strong></td><td>Ordinário</td><td>Ordinário</td></tr>
+                                    <tr><td><strong>ANPP</strong></td><td>Possível (pena mín. 2 anos)</td><td>Possível (pena mín. 1 ano)</td></tr>
+                                    <tr><td><strong>Transação Penal</strong></td><td>❌ Não aplicável</td><td>❌ Não aplicável</td></tr>
+                                    <tr><td><strong>Suspensão Cond. Processo</strong></td><td>❌ Não aplicável</td><td>❌ Não aplicável</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-sm mt-2 text-gray-600"><strong>Observação:</strong> A aplicabilidade do ANPP é controversa se o crime for praticado contra mulher por razões de gênero.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Prescrição</h3>
+                        <p class="text-lg">O prazo prescricional em abstrato para ambos os crimes é de <strong>12 anos</strong> (baseado nas penas máximas de 6 e 5 anos).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    </div>
+        <!-- Seção 5: Jurisprudência e Doutrina -->
+        <section class="content-section p-6 md:p-12">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">JURISPRUDÊNCIA E DEBATES</h2>
+                <div class="space-y-6">
+                    <h3 class="text-xl font-semibold text-gray-800">🏛️ Teses Importantes do STJ</h3>
+                    <p class="text-lg bg-gray-100 p-3 rounded-md"><strong>Violação Sexual mediante Fraude:</strong> Conhecido como "Estelionato Sexual". O engano deve viciar a vontade da vítima sobre aspectos essenciais do ato.</p>
+                    <p class="text-lg bg-gray-100 p-3 rounded-md"><strong>Importunação Sexual:</strong> Crime subsidiário. Atos típicos incluem apalpar, tocar ou ejacular na vítima sem consentimento, comum em transportes públicos.</p>
+                </div>
+            </div>
+        </section>
 
-    <script>
-        // *** IMPORTANTE: Cole sua API Key do Google AI Studio aqui ***
-        // Para obter sua chave: https://aistudio.google.com/app/apikey
-        // Mantenha esta chave em segredo em ambientes de produção.
-        const API_KEY = "AIzaSyCOf8eoIZVQesyXh32VBFje9yrTTD67AsU"; // Sua chave de API foi inserida aqui!
+        <!-- Seção 6: Quadro Comparativo -->
+        <section class="content-section p-6 md:p-12">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">QUADRO COMPARATIVO (CRIMES PRÓXIMOS)</h2>
+                <div class="responsive-table-container bg-white">
+                    <table>
+                        <thead><tr><th>Aspecto</th><th>Art. 213 (Estupro)</th><th>Art. 215 (Violação Fraude)</th><th>Art. 215-A (Importunação)</th><th>Art. 216-A (Assédio)</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Meio</strong></td><td>Violência/grave ameaça</td><td>Fraude</td><td>Sem anuência</td><td>Superioridade hierárquica</td></tr>
+                            <tr><td><strong>Pena</strong></td><td>6-10 anos</td><td>2-6 anos</td><td>1-5 anos</td><td>1-2 anos</td></tr>
+                            <tr><td><strong>Ação Penal</strong></td><td>Pública incondicionada</td><td>Pública incondicionada</td><td>Pública incondicionada</td><td>Pública condicionada</td></tr>
+                            <tr><td><strong>ANPP</strong></td><td>Não (pena > 4 anos)</td><td>Possível (controverso)</td><td>Possível (controverso)</td><td>Possível</td></tr>
+                            <tr><td><strong>Subsidiário</strong></td><td>Não</td><td>Não</td><td>Sim</td><td>Não</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
-        // Referências aos elementos do DOM
-        const quizThemeInput = document.getElementById('quiz-theme');
-        const quizDifficultySelect = document.getElementById('quiz-difficulty');
-        const generateQuizBtn = document.getElementById('generate-quiz-btn');
-        const loadingIndicator = document.getElementById('loading-indicator');
-        const quizContainer = document.getElementById('quiz-container');
-        const quizQuestion = document.getElementById('quiz-question');
-        const quizOptions = document.getElementById('quiz-options');
-        const quizFeedback = document.getElementById('quiz-feedback');
-        const nextQuizBtn = document.getElementById('next-quiz-btn');
-        const errorMessageDiv = document.getElementById('error-message');
-        const errorText = document.getElementById('error-text');
+        <!-- Seção 7: Casos Práticos -->
+        <section class="content-section p-6 md:p-12">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">CASOS PRÁTICOS</h2>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Caso 1: Médico e Paciente</h3>
+                        <p class="text-lg"><strong>Situação:</strong> Médico simula necessidade de exame ginecológico para praticar atos libidinosos com paciente.</p>
+                        <p class="text-lg bg-green-100 p-3 rounded-md"><strong>Análise:</strong> Art. 215, CP (violação sexual mediante fraude), pela simulação de ato médico necessário.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Caso 2: Transporte Público</h3>
+                        <p class="text-lg"><strong>Situação:</strong> Homem ejacula em mulher dentro de ônibus lotado.</p>
+                        <p class="text-lg bg-green-100 p-3 rounded-md"><strong>Análise:</strong> Art. 215-A, CP (importunação sexual), pela prática de ato libidinoso sem anuência para satisfazer a lascívia.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        let currentQuiz = null; // Armazena o quiz atual para verificação de resposta
+        <!-- Seção 8: Pegadinhas e Mnemônicos -->
+        <section class="content-section p-6 md:p-12">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">PEGADINHAS & DICAS DE MEMORIZAÇÃO</h2>
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">❌ Pegadinhas Clássicas</h3>
+                        <ul class="list-disc list-inside text-lg">
+                            <li><strong>Confundir com estupro:</strong> A violação mediante fraude NÃO tem violência ou grave ameaça.</li>
+                            <li><strong>Ação penal:</strong> Após 2018, é sempre pública INCONDICIONADA para estes dois crimes.</li>
+                            <li><strong>Subsidiariedade:</strong> A importunação (Art. 215-A) só se aplica se o ato não for um crime mais grave.</li>
+                        </ul>
+                    </div>
+                     <div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">🎯 Mnemônicos</h3>
+                        <pre>"FraVi-2a6": Fraude + Viciamento = 2 a 6 anos (art. 215)
+"ImSub-1a5": Importunação + Subsidiária = 1 a 5 anos (art. 215-A)</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        /**
-         * Função auxiliar para tentar fazer fetch com exponential backoff.
-         * @param {string} url - URL para a requisição.
-         * @param {Object} options - Opções para a requisição fetch.
-         * @param {number} retries - Número máximo de tentativas.
-         * @param {number} delay - Atraso inicial em milissegundos.
-         * @returns {Promise<Response>} A resposta da requisição bem-sucedida.
-         * @throws {Error} Se todas as tentativas falharem ou se houver um erro não-retentável.
-         */
-        async function retryFetch(url, options, retries = 3, delay = 1000) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.ok) {
-                        return response;
-                    } else {
-                        const errorBody = await response.text();
-                        const errorMessage = `Status: ${response.status}, Mensagem: ${response.statusText || 'Resposta da API vazia'}. Detalhes: ${errorBody}`;
-                        console.warn(`Tentativa ${i + 1} falhou. ${errorMessage}`);
-                        if (response.status === 429 || response.status >= 500) {
-                            await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
-                        } else {
-                            throw new Error(`Erro na API: ${errorMessage}`);
-                        }
-                    }
-                } catch (error) {
-                    const detailedErrorMessage = error.message || 'Erro de rede ou conexão desconhecido.';
-                    console.error(`Erro na tentativa ${i + 1} de fetch:`, detailedErrorMessage, error);
-                    if (i < retries - 1) {
-                        await new Promise(res => setTimeout(res, delay * Math.pow(2, i)));
-                    } else {
-                        throw new Error(`Erro de conexão ou API: ${detailedErrorMessage}`);
-                    }
-                }
-            }
-            throw new Error('Todas as tentativas de fetch falharam sem uma resposta clara.');
-        }
+        <!-- Seção 9: Resumo Executivo -->
+        <section class="content-section p-6 md:p-12 border-b-0">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">RESUMO EXECUTIVO</h2>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">10 Pontos para Revisão Rápida</h3>
+                <ol class="list-decimal list-inside space-y-2 text-lg">
+                    <li><strong>Art. 215:</strong> Violação sexual mediante **fraude** (estelionato sexual) - Pena de 2 a 6 anos.</li>
+                    <li><strong>Art. 215-A:</strong> **Importunação sexual** (crime subsidiário) - Pena de 1 a 5 anos.</li>
+                    <li><strong>Ação penal:</strong> Pública **incondicionada** para ambos desde a Lei 13.718/2018.</li>
+                    <li><strong>Bem jurídico:</strong> Liberdade e dignidade sexual.</li>
+                    <li><strong>Fraude (Art. 215):</strong> O engano deve viciar a vontade sobre aspectos essenciais.</li>
+                    <li><strong>Subsidiariedade (Art. 215-A):</strong> Só se aplica se a conduta não constituir crime mais grave.</li>
+                    <li><strong>ANPP:</strong> Tecnicamente possível para ambos, mas controverso em casos de violência de gênero.</li>
+                    <li><strong>Transação Penal:</strong> **NÃO** é cabível.</li>
+                    <li><strong>Prescrição:</strong> **12 anos** em abstrato para os dois crimes.</li>
+                    <li><strong>Competência:</strong> Geralmente da Justiça Estadual.</li>
+                </ol>
+            </div>
+        </section>
 
-        /**
-         * Gera um novo quiz com base no tema e nível de dificuldade fornecidos.
-         */
-        async function generateQuiz() {
-            const theme = quizThemeInput.value.trim();
-            const difficulty = quizDifficultySelect.value;
-            
-            // Verifica se a API_KEY foi definida no código
-            if (!API_KEY || API_KEY === "YOUR_API_KEY_HERE") { // Este check agora é apenas para o caso de a chave não ter sido substituída
-                showError('Erro de configuração: A chave de API não foi inserida corretamente no código.');
-                return;
-            }
+    </main>
 
-            // Esconde elementos e mostra loading
-            quizContainer.classList.add('hidden');
-            errorMessageDiv.classList.add('hidden');
-            loadingIndicator.classList.remove('hidden');
-            generateQuizBtn.disabled = true;
-            nextQuizBtn.disabled = true;
-            quizFeedback.classList.add('hidden'); // Esconde feedback anterior
-
-            const prompt = `Gere um objeto JSON para um quiz de nível ${difficulty.toUpperCase()} sobre o tema "${theme}".
-            O objeto deve conter as seguintes propriedades:
-            - "question": (STRING) A pergunta do quiz.
-            - "options": (ARRAY de STRING) Um array com exatamente 4 opções de resposta.
-            - "correctAnswer": (STRING) A resposta correta, que deve ser uma das opções fornecidas.
-            - "justification": (STRING) Uma breve explicação do porquê a resposta correta está certa e as outras erradas, ou um fato interessante relacionado.
-
-            Exemplo de formato esperado:
-            {
-              "question": "Qual é a capital de Burkina Faso?",
-              "options": ["Accra", "Ouagadougou", "Niamey", "Bamako"],
-              "correctAnswer": "Ouagadougou",
-              "justification": "Ouagadougou é a capital e maior cidade de Burkina Faso, localizada no centro do país."
-            }`;
-
-            const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
-            const payload = {
-                contents: chatHistory,
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            "question": { "type": "STRING" },
-                            "options": {
-                                "type": "ARRAY",
-                                "items": { "type": "STRING" },
-                                "minItems": 4,
-                                "maxItems": 4
-                            },
-                            "correctAnswer": { "type": "STRING" },
-                            "justification": { "type": "STRING" }
-                        },
-                        "required": ["question", "options", "correctAnswer", "justification"]
-                    }
-                }
-            };
-
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`; // Usa a API_KEY hardcoded
-
-            try {
-                const response = await retryFetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const json = result.candidates[0].content.parts[0].text;
-                    try {
-                        const quizData = JSON.parse(json);
-                        // Validação básica da estrutura do quiz
-                        if (quizData.question && Array.isArray(quizData.options) && quizData.options.length === 4 && quizData.correctAnswer && quizData.justification) {
-                            currentQuiz = quizData;
-                            displayQuiz(quizData);
-                        } else {
-                            throw new Error("Estrutura do quiz inválida recebida da API.");
-                        }
-                    } catch (jsonError) {
-                        console.error('Erro ao fazer parse do JSON da API:', jsonError, 'JSON recebido:', json);
-                        showError('Erro ao processar a resposta do quiz. Tente novamente.');
-                    }
-                } else {
-                    console.warn('Resposta da API não contém candidatos ou conteúdo esperado:', result);
-                    showError('Não foi possível gerar um quiz para este tema. Tente um tema diferente ou seja mais específico.');
-                }
-            } catch (error) {
-                console.error('Erro ao gerar quiz:', error);
-                showError(`Ocorreu um erro ao gerar o quiz: ${error.message}. Por favor, tente novamente.`);
-            } finally {
-                loadingIndicator.classList.add('hidden');
-                generateQuizBtn.disabled = false;
-            }
-        }
-
-        /**
-         * Exibe a pergunta e as opções do quiz na interface.
-         * @param {Object} quizData - Objeto contendo os dados do quiz.
-         */
-        function displayQuiz(quizData) {
-            quizContainer.classList.remove('hidden');
-            quizQuestion.textContent = quizData.question;
-            quizOptions.innerHTML = ''; // Limpa opções anteriores
-            quizFeedback.classList.add('hidden'); // Esconde feedback anterior
-            quizFeedback.className = 'p-3 rounded-lg text-white text-center font-medium mb-6 hidden'; // Reseta classes de cor
-            nextQuizBtn.disabled = true; // Desabilita o botão "Próximo Quiz" até a resposta
-
-            quizData.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.className = 'quiz-option-btn w-full text-left p-3 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50';
-                button.textContent = option;
-                button.dataset.option = option; // Armazena a opção no dataset
-                button.addEventListener('click', checkAnswer);
-                quizOptions.appendChild(button);
-            });
-        }
-
-        /**
-         * Verifica a resposta selecionada pelo usuário.
-         * @param {Event} event - O evento de clique no botão de opção.
-         */
-        function checkAnswer(event) {
-            const selectedOption = event.target.dataset.option;
-            const allOptionButtons = quizOptions.querySelectorAll('.quiz-option-btn');
-
-            // Desabilita todos os botões de opção após a escolha
-            allOptionButtons.forEach(button => {
-                button.disabled = true;
-                button.classList.remove('hover:bg-gray-50', 'focus:ring-blue-500', 'focus:ring-opacity-50');
-            });
-
-            quizFeedback.classList.remove('hidden');
-            nextQuizBtn.disabled = false; // Habilita o botão "Próximo Quiz"
-
-            if (selectedOption === currentQuiz.correctAnswer) {
-                quizFeedback.classList.add('bg-green-500');
-                quizFeedback.textContent = 'Parabéns! Resposta Correta.';
-            } else {
-                quizFeedback.classList.add('bg-red-500');
-                quizFeedback.innerHTML = `Resposta Incorreta. A resposta correta era: <span class="font-bold">${currentQuiz.correctAnswer}</span>.<br><br>${currentQuiz.justification}`;
-                // Opcional: Destacar a resposta correta e a errada
-                allOptionButtons.forEach(button => {
-                    if (button.dataset.option === selectedOption) {
-                        button.classList.add('bg-red-200', 'border-red-500'); // Marca a opção errada
-                    } else if (button.dataset.option === currentQuiz.correctAnswer) {
-                        button.classList.add('bg-green-200', 'border-green-500'); // Marca a opção correta
-                    }
-                });
-            }
-        }
-
-        /**
-         * Exibe uma mensagem de erro na interface.
-         * @param {string} message - A mensagem de erro a ser exibida.
-         */
-        function showError(message) {
-            errorMessageDiv.classList.remove('hidden');
-            errorText.textContent = message;
-            quizContainer.classList.add('hidden'); // Esconde o quiz se houver erro
-            loadingIndicator.classList.add('hidden'); // Esconde o loading
-        }
-
-        // --- Event Listeners ---
-        generateQuizBtn.addEventListener('click', generateQuiz);
-        nextQuizBtn.addEventListener('click', generateQuiz); // O botão "Próximo Quiz" chama a mesma função
-
-        // Inicializa o site ao carregar a página
-        document.addEventListener('DOMContentLoaded', () => {
-            // Garante que o quiz e o feedback estejam ocultos no início
-            quizContainer.classList.add('hidden');
-            quizFeedback.classList.add('hidden');
-            errorMessageDiv.classList.add('hidden');
-            loadingIndicator.classList.add('hidden');
-        });
-    </script>
 </body>
 </html>
