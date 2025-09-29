@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistema de Pedidos</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root{
+      --ink:#0f172a; --muted:#6b7280; --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff; --blue:#2563eb;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+    .wrap{max-width:980px;margin:0 auto;padding:16px}
+    h1{font-size:18px;margin:0}
+    .grid{display:grid;gap:12px}
+    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    @media (max-width:760px){.grid.cols-3{grid-template-columns:1fr}.grid.cols-2{grid-template-columns:1fr}}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 12px;border:1px solid var(--line);background:var(--card);border-radius:10px;cursor:pointer}
+    .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+    .btn.ghost{background:#fff}
+    .home .btn{padding:16px 14px;font-weight:600}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+    .field>label{font-weight:600}
+    input, select, textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+    .cards{display:grid;gap:8px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+    .card h4{margin:0 0 6px 0}
+    .badge{display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:#334155;background:#f1f5f9}
+    .section{margin:18px 0 8px;font-weight:700}
+    .sticky-actions{position:sticky;top:56px;background:var(--bg);padding:6px 0 12px;z-index:5}
+    .group{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;margin-bottom:14px}
+    .group .group-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .small{color:var(--muted);font-size:12px}
+    .hidden{display:none !important}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sistema de Pedidos</h1>
+    <nav class="row">
+      <button class="btn ghost" id="btnExportAll">Exportar tudo</button>
+      <label class="btn ghost">
+        Importar pedidos
+        <input id="importAll" type="file" accept=".json" hidden>
+      </label>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- HOME -->
+    <section id="view-home" class="view home">
+      <div class="grid cols-2">
+        <button class="btn primary" data-goto="vender">VENDER</button>
+        <button class="btn primary" data-goto="clientes">CADASTRAR CLIENTE</button>
+        <button class="btn primary" data-goto="produtos">CADASTRAR PRODUTO</button>
+        <button class="btn primary" data-goto="abrir-rota">ABRIR ROTA</button>
+      </div>
+    </section>
+
+    <!-- VENDER -->
+    <section id="view-vender" class="view hidden">
+      <div class="sticky-actions row">
+        <button class="btn ghost" data-goto="home">← Voltar</button>
+        <span class="small">Cadastre cliente e produto antes, se necessário.</span>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Novo pedido</h3>
+          <div class="field">
+            <label>Cliente</label>
+            <select id="vdCliente"></select>
+          </div>
+          <div class="field">
+            <label>Produto</label>
+            <select id="vdProduto"></select>
+          </div>
+          <div class="row">
+            <div class="field" style="flex:1">
+              <label>Qtd</label>
+              <input id="vdQtd" type="number" min="1" value="1">
+            </div>
+            <div class="field" style="flex:1">
+              <label>Valor (R$)</label>
+              <input id="vdValor" type="number" step="0.01" placeholder="0,00">
+            </div>
+          </div>
+          <div class="field">
+            <label>ROTA</label>
+            <select id="vdRota">
+              <option>VG</option>
+              <option>COXIPO</option>
+              <option>CUIABA</option>
+              <option>CPA</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Observações</label>
+            <textarea id="vdObs" rows="2" placeholder="Ex.: troco, horário, pontos de referência..."></textarea>
+          </div>
+          <button id="btnAddPedido" class="btn primary">Adicionar pedido</button>
+        </div>
+
+        <div class="card">
+          <h3>Resumo</h3>
+          <div id="vdResumo" class="small">—</div>
+        </div>
+      </div>
+
+      <h3 class="section">Pedidos por ROTA</h3>
+      <div id="rotasStack"></div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="view-clientes" class="view hidden">
+      <div class="sticky-actions row">
+        <button class="btn ghost" data-goto="home">← Voltar</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Novo cliente</h3>
+          <div class="field"><label>Nome</label><input id="clNome" placeholder="Maria da Silva"></div>
+          <div class="field"><label>Telefone</label><input id="clZap" placeholder="(65) 9...."></div>
+          <div class="field"><label>Endereço</label><input id="clEnd" placeholder="Rua, nº, bairro"></div>
+          <button id="btnSalvarCliente" class="btn primary">Salvar cliente</button>
+        </div>
+        <div class="card">
+          <h3>Clientes</h3>
+          <div id="listaClientes" class="cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section id="view-produtos" class="view hidden">
+      <div class="sticky-actions row">
+        <button class="btn ghost" data-goto="home">← Voltar</button>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3>Novo produto</h3>
+          <div class="field"><label>Nome</label><input id="prdNome" placeholder="Arroz"></div>
+          <div class="row">
+            <div class="field" style="flex:1"><label>Tamanho</label><input id="prdTam" placeholder="Pequeno / Médio / Grande"></div>
+            <div class="field" style="flex:1"><label>Tipo</label><input id="prdTipo" placeholder="Branco / Parboilizado / Integral"></div>
+          </div>
+          <div class="field"><label>Valor (R$)</label><input id="prdValor" type="number" step="0.01" placeholder="0,00"></div>
+          <button id="btnSalvarProduto" class="btn primary">Salvar produto</button>
+        </div>
+        <div class="card">
+          <h3>Produtos</h3>
+          <div id="listaProdutos" class="cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABRIR ROTA -->
+    <section id="view-abrir-rota" class="view hidden">
+      <div class="sticky-actions row">
+        <button class="btn ghost" data-goto="home">← Voltar</button>
+      </div>
+      <div class="card">
+        <h3>Carregar rota (JSON)</h3>
+        <label class="btn ghost">
+          Selecionar arquivo JSON
+          <input id="rotaFile" type="file" accept=".json" hidden>
+        </label>
+        <div id="rotaInfo" class="small">Nenhum arquivo carregado.</div>
+      </div>
+      <div id="rotaCards" class="cards" style="margin-top:12px"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
