@@ -420,11 +420,16 @@ function persistOrder(container, view){
     const mapName = {"andre":"André","claudio":"Cláudio","junior":"Júnior"};
     const nome = mapName[view] || view;
     let rota = load(KEY.rota(nome), []);
-    const byId = Object.fromEntries(rota.map(p=>[p.id, p]));
+    const byId = Object.fromEntries((rota||[]).map(p=>[p.id, p]));
     rota = ids.map(id=>byId[id]).filter(Boolean).map((p,i)=>({...p, sort:now+i}));
-    save(KEY.rota(nome), JSON.stringify(rota));
+    // ✅ use UM dos dois jeitos abaixo (ambos corretos). Recomendo o 1:
+    // 1) salvar objeto usando helper (ele stringify por você)
+    save(KEY.rota(nome), rota);
+    // 2) OU salvar manualmente no localStorage:
+    // localStorage.setItem(KEY.rota(nome), JSON.stringify(rota));
   }
 }
+
 
 /* impressão 58mm */
 function printPedido(ped, cliOpt, prdOpt){
