@@ -67,18 +67,24 @@ function openView(name){
 function hydrateVender(){
   // clientes
   const dl=$("#clientesList");
-  dl.innerHTML=state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))
-    .map(c=>`<option value="${escapeHTML(c.nome)}">${escapeHTML(c.nome)}</option>`).join("");
+  if (dl){
+    dl.innerHTML=state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))
+      .map(c=>`<option value="${escapeHTML(c.nome)}">${escapeHTML(c.nome)}</option>`).join("");
+  }
   // produtos
-  $("#pedidoProduto").innerHTML = state.produtos.length
-    ? state.produtos.map(p=>`
-        <option value="${p.id}">${escapeHTML(p.tam)} — ${escapeHTML(p.arroz)} — ${money(p.valor)}</option>
-      `).join("")
-    : `<option value="">Cadastre um produto</option>`;
+  const prdSel = $("#pedidoProduto");
+  if (prdSel){
+    prdSel.innerHTML = state.produtos.length
+      ? state.produtos.map(p=>`
+          <option value="${p.id}">${escapeHTML(p.tam)} — ${escapeHTML(p.arroz)} — ${money(p.valor)}</option>
+        `).join("")
+      : `<option value="">Cadastre um produto</option>`;
+  }
   // entregadores
-  $("#pedidoEntregador").innerHTML = state.entregadores.map(e=>`
-    <option>${escapeHTML(e.nome)}</option>
-  `).join("");
+  const entSel = $("#pedidoEntregador");
+  if (entSel){
+    entSel.innerHTML = state.entregadores.map(e=>`<option>${escapeHTML(e.nome)}</option>`).join("");
+  }
 }
 
 $("#btnSalvarPedido").addEventListener("click", ()=>{
@@ -119,7 +125,7 @@ $("#btnSalvarCliente").addEventListener("click", ()=>{
 });
 
 function renderClientes(){
-  const box=$("#listaClientes"); box.innerHTML="";
+  const box=$("#listaClientes"); if(!box) return; box.innerHTML="";
   state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(c=>{
     const div=document.createElement("div");
     div.className="item";
@@ -184,7 +190,7 @@ $("#btnSalvarProduto").addEventListener("click", ()=>{
 });
 
 function renderProdutos(){
-  const box=$("#listaProdutos"); box.innerHTML="";
+  const box=$("#listaProdutos"); if(!box) return; box.innerHTML="";
   state.produtos.forEach(p=>{
     const div=document.createElement("div");
     div.className="item";
@@ -212,7 +218,7 @@ $("#btnSalvarEntregador").addEventListener("click", ()=>{
 });
 
 function renderEntregadores(){
-  const box=$("#listaEntregadores"); box.innerHTML="";
+  const box=$("#listaEntregadores"); if(!box) return; box.innerHTML="";
   state.entregadores.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(e=>{
     const div=document.createElement("div");
     div.className="item";
@@ -244,7 +250,7 @@ function renderEntregadores(){
 
 /* ---- rotas: gerar e enviar por WhatsApp ---- */
 function renderRotasPane(){
-  const pane=$("#rotasPane"); pane.innerHTML="";
+  const pane=$("#rotasPane"); if(!pane) return; pane.innerHTML="";
   state.entregadores.forEach(e=>{
     const pedidos = state.pedidos.filter(p=>p.entregador===e.nome && p.status!=="Entregue")
                                  .sort((a,b)=>(a.sort||0)-(b.sort||0));
@@ -308,7 +314,7 @@ function renderEntregadorPage(view){
   const radios = $$(`input[name="orig-${view}"]`);
   const origin = (radios.find(r=>r.checked)?.value)||"site";
 
-  // upload de rota (arquivo) — com null-check e normalização
+  // upload de rota (arquivo) — garante id/sort
   const up = $(`#upload-${view}`);
   if (up){
     up.onchange = async (e)=>{
@@ -326,7 +332,7 @@ function renderEntregadorPage(view){
           dia: p.dia || "",
           sort: Number.isFinite(p.sort) ? p.sort : (now + i)
         }));
-        save(KEY.rota(nome), pedidos); // evita dupla serialização
+        save(KEY.rota(nome), pedidos);
         alert("Rota carregada. Selecione 'Origem: Arquivo'.");
         renderEntregadorPage(view);
       }catch(err){ alert("Arquivo inválido."); }
