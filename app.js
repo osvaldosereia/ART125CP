@@ -45,19 +45,6 @@ const norm = s => (s||"").replace(/\s+/g," ").trim();
 const money = n => (Number(n||0)).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const telDigits = s => (s||"").replace(/\D/g,"");
 const escapeHTML = s => String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const fmtDate = ts => new Date(ts).toLocaleString("pt-BR");
-const todayStart = ()=>{ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); };
-const daysAgoStart = n=>{ const d=new Date(); d.setDate(d.getDate()-n); d.setHours(0,0,0,0); return d.getTime(); };
-
-/* ---------- normalizador de rota (desarma JSON duplo) ---------- */
-function loadRota(nome){
-  let r = load(KEY.rota(nome), []);
-  if (typeof r === "string") {
-    try { r = JSON.parse(r); } catch(e) {}
-  }
-  if (!Array.isArray(r)) r = [];
-  return r;
-}
 
 /* ---- navegação ---- */
 $$(".tile").forEach(btn=>btn.addEventListener("click",()=>openView(btn.dataset.view)));
@@ -70,31 +57,22 @@ function openView(name){
   if(name==="produtos"){ renderProdutos(); }
   if(name==="entregadores"){ renderEntregadores(); renderRotasPane(); }
   if(["andre","claudio","junior"].includes(name)){ renderEntregadorPage(name); }
-  if(name==="admin"){ renderAdmin(); }
 }
 
 /* ---- vender ---- */
 function hydrateVender(){
   // clientes
   const dl=$("#clientesList");
-  if (dl){
-    dl.innerHTML=state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))
-      .map(c=>`<option value="${escapeHTML(c.nome)}">${escapeHTML(c.nome)}</option>`).join("");
-  }
+  dl.innerHTML=state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))
+    .map(c=>`<option value="${escapeHTML(c.nome)}">${escapeHTML(c.nome)}</option>`).join("");
   // produtos
-  const prdSel = $("#pedidoProduto");
-  if (prdSel){
-    prdSel.innerHTML = state.produtos.length
-      ? state.produtos.map(p=>`
-          <option value="${p.id}">${escapeHTML(p.tam)} — ${escapeHTML(p.arroz)} — ${money(p.valor)}</option>
-        `).join("")
-      : `<option value="">Cadastre um produto</option>`;
-  }
+  $("#pedidoProduto").innerHTML = state.produtos.map(p=>`
+    <option value="${p.id}">${escapeHTML(p.tam)} — ${escapeHTML(p.arroz)} — ${money(p.valor)}</option>
+  `).join("");
   // entregadores
-  const entSel = $("#pedidoEntregador");
-  if (entSel){
-    entSel.innerHTML = state.entregadores.map(e=>`<option>${escapeHTML(e.nome)}</option>`).join("");
-  }
+  $("#pedidoEntregador").innerHTML = state.entregadores.map(e=>`
+    <option>${escapeHTML(e.nome)}</option>
+  `).join("");
 }
 
 $("#btnSalvarPedido").addEventListener("click", ()=>{
@@ -135,7 +113,7 @@ $("#btnSalvarCliente").addEventListener("click", ()=>{
 });
 
 function renderClientes(){
-  const box=$("#listaClientes"); if(!box) return; box.innerHTML="";
+  const box=$("#listaClientes"); box.innerHTML="";
   state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(c=>{
     const div=document.createElement("div");
     div.className="item";
@@ -173,10 +151,7 @@ $("#csvClientes").addEventListener("change", async (e)=>{
   const text=await f.text();
   const rows=text.split(/\r?\n/).map(r=>r.trim()).filter(Boolean);
   let ok=0,fail=0;
-  let start=0;
-  if(rows[0]?.toLowerCase().startsWith("nome,")) start=1; // ignora header
-  for(let i=start;i<rows.length;i++){
-    const r=rows[i];
+  for(const r of rows){
     const [nome,tel,end,comp]=(r.split(",").map(s=>s?.trim()||""));
     if(!nome||!tel||!end){fail++; continue;}
     state.clientes.push({id:uid(), nome,tel,end,comp}); ok++;
@@ -186,21 +161,21 @@ $("#csvClientes").addEventListener("change", async (e)=>{
 });
 $("#btnExportClientes").addEventListener("click", ()=>{
   const header="nome,telefone,endereco,complemento\n";
-  const body=state.clientes.map(c=>[c.nome,c.tel,(c.end||"").replace(/,/g," "), (c.comp||"").replace(/,/g," ")].join(",")).join("\n");
+  const body=state.clientes.map(c=>[c.nome,c.tel,c.end,c.comp||""].map(s=>String(s).replace(/,/g," ")).join(",")).join("\n");
   downloadText("clientes.csv", header+body);
 });
 
 /* ---- produtos ---- */
 $("#btnSalvarProduto").addEventListener("click", ()=>{
   const tam=norm($("#prdTam").value), arroz=norm($("#prdArroz").value), valor=Number($("#prdValor").value||0);
-  if(!tam || !arroz || isNaN(valor)) return alert("Preencha tamanho, tipo e valor numérico.");
+  if(!tam || !arroz || !valor) return alert("Preencha tamanho, tipo e valor.");
   state.produtos.push({id:uid(), tam, arroz, valor}); persist("produtos");
   $("#prdTam").value=$("#prdArroz").value=$("#prdValor").value="";
   renderProdutos(); hydrateVender(); alert("Produto salvo!");
 });
 
 function renderProdutos(){
-  const box=$("#listaProdutos"); if(!box) return; box.innerHTML="";
+  const box=$("#listaProdutos"); box.innerHTML="";
   state.produtos.forEach(p=>{
     const div=document.createElement("div");
     div.className="item";
@@ -228,7 +203,7 @@ $("#btnSalvarEntregador").addEventListener("click", ()=>{
 });
 
 function renderEntregadores(){
-  const box=$("#listaEntregadores"); if(!box) return; box.innerHTML="";
+  const box=$("#listaEntregadores"); box.innerHTML="";
   state.entregadores.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(e=>{
     const div=document.createElement("div");
     div.className="item";
@@ -260,7 +235,7 @@ function renderEntregadores(){
 
 /* ---- rotas: gerar e enviar por WhatsApp ---- */
 function renderRotasPane(){
-  const pane=$("#rotasPane"); if(!pane) return; pane.innerHTML="";
+  const pane=$("#rotasPane"); pane.innerHTML="";
   state.entregadores.forEach(e=>{
     const pedidos = state.pedidos.filter(p=>p.entregador===e.nome && p.status!=="Entregue")
                                  .sort((a,b)=>(a.sort||0)-(b.sort||0));
@@ -305,8 +280,12 @@ async function shareToWhats(nomeEntregador, blob){
   const text = `Rota de entregas — ${nomeEntregador}.\nAbra esse arquivo no site para carregar seus pedidos.`;
 
   if (navigator.canShare && navigator.canShare({files:[file]})){
-    try{ await navigator.share({ files:[file], text }); return; }catch(err){}
+    try{
+      await navigator.share({ files:[file], text });
+      return;
+    }catch(err){ /* usuário cancelou */ }
   }
+  // fallback: baixa o arquivo e abre wa.me com mensagem
   downloadBlob(file.name, blob);
   if (e?.zap) window.open(`https://wa.me/55${e.zap}?text=${encodeURIComponent(text)}`,"_blank");
   else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
@@ -319,54 +298,41 @@ function pick(obj,keys){ if(!obj) return null; const o={}; keys.forEach(k=>o[k]=
 function renderEntregadorPage(view){
   const mapName = {"andre":"André","claudio":"Cláudio","junior":"Júnior"};
   const nome = mapName[view] || view;
-
   // origem: site/arquivo
   const radios = $$(`input[name="orig-${view}"]`);
   const origin = (radios.find(r=>r.checked)?.value)||"site";
 
-  // upload de rota (arquivo) — garante id/sort
+  // handler de upload (rota recebida)
   const up = $(`#upload-${view}`);
-  if (up){
-    up.onchange = async (e)=>{
-      const f=e.target.files[0]; if(!f) return;
-      try{
-        const json = JSON.parse(await f.text());
-        let pedidos = Array.isArray(json)? json : (json.pedidos||[]);
-        const now = Date.now();
-        pedidos = pedidos.map((p,i)=>({
-          id: p.id || uid(),
-          cliente: p.cliente || null,
-          produto: p.produto || null,
-          obs: p.obs || "",
-          pagamento: p.pagamento || "",
-          dia: p.dia || "",
-          sort: Number.isFinite(p.sort) ? p.sort : (now + i)
-        }));
-        save(KEY.rota(nome), pedidos);
-        alert("Rota carregada. Selecione 'Origem: Arquivo'.");
-        renderEntregadorPage(view);
-      }catch(err){ alert("Arquivo inválido."); }
-    };
-  }
+  up.onchange = async (e)=>{
+    const f=e.target.files[0]; if(!f) return;
+    try{
+      const json = JSON.parse(await f.text());
+      // compat: aceitar {pedidos:[...]} ou array direto
+      const pedidos = Array.isArray(json)? json : (json.pedidos||[]);
+      localStorage.setItem(KEY.rota(nome), JSON.stringify(pedidos));
+      alert("Rota carregada. Selecione 'Origem: Arquivo'.");
+      renderEntregadorPage(view);
+    }catch(err){ alert("Arquivo inválido."); }
+  };
 
-  // atalho enviar rota
+  // botão enviar rota (atalho)
   const btnSend = $(`#view-${view} [data-send="${nome}"]`);
-  if (btnSend){
-    btnSend.onclick = async ()=>{ const blob = buildRotaBlob(nome); await shareToWhats(nome, blob); };
-  }
+  btnSend.onclick = async ()=>{ const blob = buildRotaBlob(nome); await shareToWhats(nome, blob); };
 
   // render cards
-  const box = $(`#cards-${view}`); if(!box) return;
-  box.innerHTML="";
+  const box = $(`#cards-${view}`); box.innerHTML="";
   let pedidos=[];
   if(origin==="arquivo"){
-    pedidos = loadRota(nome);
+    pedidos = load(KEY.rota(nome), []);
   }else{
     pedidos = state.pedidos.filter(p=>p.entregador===nome && p.status!=="Entregue");
   }
+  // sort por campo sort
   pedidos.sort((a,b)=>(a.sort||0)-(b.sort||0));
 
   for(const p of pedidos){
+    // compat: quando origem=arquivo, p.cliente & p.produto já vêm prontos
     const c = p.cliente || state.clientes.find(x=>x.id===p.clienteId) || {};
     const pr= p.produto || state.produtos.find(x=>x.id===p.produtoId) || {};
     const id = p.id || uid();
@@ -394,12 +360,14 @@ function renderEntregadorPage(view){
         ${origin==="site" ? `<button class="btn ok" data-act="done" data-id="${id}">Entregue</button>` : ""}
       </div>
     `;
+    // guardo dados no elemento para handlers
     card._data = {p,c,pr,origin,nome};
     box.appendChild(card);
   }
 
   enableDrag(box, view);
   box.onclick = entregadorActions;
+  // alternar origem
   radios.forEach(r=>r.onchange=()=>renderEntregadorPage(view));
 }
 
@@ -421,14 +389,18 @@ function entregadorActions(ev){
     window.open(`sms:${telDigits(c.tel||"")}?&body=${msg}`,"_self");
   }
   if(btn.dataset.act==="print"){
-    printPedido({ ...p, entregador:nome }, c, pr);
+    printPedido({ ...p, clienteId:p.clienteId, produtoId:p.produtoId, entregador:nome,
+      pagamento:p.pagamento, dia:p.dia, obs:p.obs
+    }, c, pr);
   }
   if(btn.dataset.act==="done"){
     const payok = document.querySelector(`input[data-payok="${btn.dataset.id}"]`);
     if(!payok?.checked) return alert("Confirme o pagamento antes de marcar como Entregue.");
+    // marca entregue no estado (apenas quando origem=site)
     const idx = state.pedidos.findIndex(x=>x.id===p.id);
     if(idx>-1){ state.pedidos[idx].status="Entregue"; state.pedidos[idx].deliveredAt=Date.now(); persist("pedidos"); }
-    alert("Pedido entregue.");
+    alert("Pedido entregue."); 
+    // re-render
     const sect=btn.closest("section.view").id.replace("view-","");
     renderEntregadorPage(sect);
   }
@@ -438,7 +410,7 @@ function entregadorActions(ev){
 function enableDrag(container, view){
   let dragEl=null;
   container.ondragstart=(e)=>{ const c=e.target.closest(".card"); if(!c) return; dragEl=c; c.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; };
-  container.ondragend  =()=>{ const c=dragEl; if(c) c.classList.remove("dragging"); persistOrder(container, view); dragEl=null; };
+  container.ondragend  =(e)=>{ const c=e.target.closest(".card"); if(c) c.classList.remove("dragging"); persistOrder(container, view); dragEl=null; };
   container.ondragover =(e)=>{ e.preventDefault(); const after=getAfter(container,e.clientY); if(!dragEl) return; if(after==null) container.appendChild(dragEl); else container.insertBefore(dragEl, after); };
   function getAfter(cont,y){
     const els=[...cont.querySelectorAll(".card:not(.dragging)")];
@@ -448,17 +420,20 @@ function enableDrag(container, view){
 function persistOrder(container, view){
   const ids=[...container.querySelectorAll(".card")].map(c=>c.dataset.id);
   const now=Date.now();
+  // origem = site? atualiza state.pedidos.sort
   const radios = $$(`input[name="orig-${view}"]`);
   const origin = (radios.find(r=>r.checked)?.value)||"site";
   if(origin==="site"){
     ids.forEach((id,i)=>{ const p=state.pedidos.find(x=>x.id===id); if(p) p.sort=now+i; });
     persist("pedidos");
   }else{
+    // origem = arquivo: reordena a rota local
     const mapName = {"andre":"André","claudio":"Cláudio","junior":"Júnior"};
     const nome = mapName[view] || view;
-    let rota = loadRota(nome);
-    const byId = Object.fromEntries((rota||[]).map(p=>[p.id, p]));
+    let rota = load(KEY.rota(nome), []);
+    const byId = Object.fromEntries(rota.map(p=>[p.id, p]));
     rota = ids.map(id=>byId[id]).filter(Boolean).map((p,i)=>({...p, sort:now+i}));
+    // 🔧 salva como OBJETO (sem JSON.stringify aqui)
     save(KEY.rota(nome), rota);
   }
 }
@@ -511,120 +486,6 @@ $("#importJsonFull").addEventListener("change", async (e)=>{
     alert("Importado com sucesso.");
   }catch{ alert("Arquivo inválido."); }
 });
-
-/* ---- ADM: Dashboard ---- */
-$("#btnAdmExportPedidos")?.addEventListener("click", exportPedidosCSV);
-$("#admPeriodo")?.addEventListener("change", renderAdmin);
-$("#admStatus")?.addEventListener("change", renderAdmin);
-
-function renderAdmin(){
-  const periodo = $("#admPeriodo").value;
-  const statusF = $("#admStatus").value;
-
-  let startTs = 0;
-  if(periodo==="hoje") startTs = todayStart();
-  if(periodo==="sete") startTs = daysAgoStart(6);
-  if(periodo==="mes")  startTs = daysAgoStart(29);
-
-  const pedidos = state.pedidos.filter(p=>{
-    const inTime = p.createdAt>=startTs;
-    const inStatus = (statusF==="todos")? true : p.status===statusF;
-    return (periodo==="todos" ? inStatus : (inTime && inStatus));
-  });
-
-  // KPIs
-  const tot = pedidos.length;
-  const pend = pedidos.filter(p=>p.status!=="Entregue").length;
-  const ent  = pedidos.filter(p=>p.status==="Entregue").length;
-  const valorTotal = pedidos.reduce((acc,p)=>{
-    const pr = state.produtos.find(x=>x.id===p.produtoId);
-    return acc + (pr?.valor||0);
-  },0);
-
-  $("#admResumo").innerHTML = `
-    <div class="kpi"><span>Pedidos</span><strong>${tot}</strong></div>
-    <div class="kpi"><span>Entregues</span><strong>${ent}</strong></div>
-    <div class="kpi"><span>Pendentes</span><strong>${pend}</strong></div>
-    <div class="kpi"><span>Valor Total</span><strong>${money(valorTotal)}</strong></div>
-  `;
-
-  // Por Entregador
-  const porEnt = {};
-  for(const e of state.entregadores){ porEnt[e.nome]={pend:0,ent:0,valor:0}; }
-  for(const p of pedidos){
-    const key = p.entregador || "—";
-    porEnt[key] ??= {pend:0,ent:0,valor:0};
-    const pr = state.produtos.find(x=>x.id===p.produtoId);
-    const isEnt = p.status==="Entregue";
-    if(isEnt) porEnt[key].ent++; else porEnt[key].pend++;
-    porEnt[key].valor += (pr?.valor||0);
-  }
-  const rowsEnt = Object.entries(porEnt).map(([nome, v])=>`
-    <tr><td>${escapeHTML(nome)}</td><td class="right">${v.ent}</td><td class="right">${v.pend}</td><td class="right">${money(v.valor)}</td></tr>
-  `).join("");
-  $("#admByEntregador").innerHTML = `
-    <div class="table">
-      <table>
-        <thead><tr><th>Entregador</th><th class="right">Entregues</th><th class="right">Pendentes</th><th class="right">Valor</th></tr></thead>
-        <tbody>${rowsEnt}</tbody>
-      </table>
-    </div>`;
-
-  // Lista
-  const rows = pedidos
-    .sort((a,b)=> (a.createdAt||0) - (b.createdAt||0))
-    .map(p=>{
-      const c = state.clientes.find(x=>x.id===p.clienteId);
-      const pr= state.produtos.find(x=>x.id===p.produtoId);
-      return `<tr>
-        <td>${fmtDate(p.createdAt)}</td>
-        <td>${escapeHTML(c?.nome||"-")}</td>
-        <td>${escapeHTML(p.entregador||"-")}</td>
-        <td>${escapeHTML(p.pagamento||"-")}</td>
-        <td class="right">${money(pr?.valor)}</td>
-        <td>${escapeHTML(p.status)}</td>
-      </tr>`;
-    }).join("");
-  $("#admLista").innerHTML = `
-    <div class="table">
-      <table>
-        <thead><tr><th>Data</th><th>Cliente</th><th>Entregador</th><th>Pagamento</th><th class="right">Valor</th><th>Status</th></tr></thead>
-        <tbody>${rows || `<tr><td colspan="6">Sem pedidos no filtro.</td></tr>`}</tbody>
-      </table>
-    </div>`;
-}
-
-function exportPedidosCSV(){
-  const periodo = $("#admPeriodo").value;
-  const statusF = $("#admStatus").value;
-
-  let startTs = 0;
-  if(periodo==="hoje") startTs = todayStart();
-  if(periodo==="sete") startTs = daysAgoStart(6);
-  if(periodo==="mes")  startTs = daysAgoStart(29);
-
-  const pedidos = state.pedidos.filter(p=>{
-    const inTime = p.createdAt>=startTs;
-    const inStatus = (statusF==="todos")? true : p.status===statusF;
-    return (periodo==="todos" ? inStatus : (inTime && inStatus));
-  });
-
-  const header = ["data","cliente","telefone","endereco","complemento","entregador","pagamento","produto","valor","status"].join(",")+"\n";
-  const body = pedidos.map(p=>{
-    const c = state.clientes.find(x=>x.id===p.clienteId)||{};
-    const pr= state.produtos.find(x=>x.id===p.produtoId)||{};
-    const cols = [
-      new Date(p.createdAt).toISOString(),
-      c.nome||"", c.tel||"", (c.end||"").replace(/,/g," "), (c.comp||"").replace(/,/g," "),
-      p.entregador||"", p.pagamento||"",
-      pr.tam?`${pr.tam} ${pr.arroz||""}`:"", (pr.valor!=null?String(pr.valor).replace(",","."):""),
-      p.status||""
-    ];
-    return cols.map(v=>String(v)).join(",");
-  }).join("\n");
-
-  downloadText(`pedidos_${new Date().toISOString().slice(0,10)}.csv`, header+body);
-}
 
 /* utils download */
 function downloadText(filename, text){
