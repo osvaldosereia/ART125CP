@@ -29,7 +29,7 @@
   .row > *{flex:1}
   label{font-weight:600;margin:8px 0 4px;display:block}
   input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
-  table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:640px}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:720px}
   th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;word-wrap:break-word;overflow-wrap:anywhere}
   .stack{display:flex;flex-direction:column;gap:12px}
   .toolbar{display:flex;gap:8px;flex-wrap:wrap}
@@ -124,6 +124,10 @@
             <input type="number" id="saleQty" min="1" value="1">
           </div>
           <div>
+            <label>Obs do item</label>
+            <input id="saleObs" placeholder="Ex.: entregar gelado, sem cebola…">
+          </div>
+          <div>
             <label>&nbsp;</label>
             <button class="btn" id="btnAddItem">Adicionar item</button>
           </div>
@@ -132,9 +136,9 @@
         <div class="hr"></div>
         <div class="table-scroll">
           <table id="cartTable">
-            <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th><th></th></tr></thead>
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th><th>Obs</th><th></th></tr></thead>
             <tbody></tbody>
-            <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th id="cartTotal">$ 0,00</th><th></th></tr></tfoot>
+            <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th id="cartTotal">$ 0,00</th><th></th><th></th></tr></tfoot>
           </table>
         </div>
         <div class="footer">
@@ -447,6 +451,7 @@ const elV = {
   route: document.getElementById('saleRoute'),
   product: document.getElementById('saleProduct'),
   qty: document.getElementById('saleQty'),
+  obs: document.getElementById('saleObs'),
   client: document.getElementById('saleClient'),
   add: document.getElementById('btnAddItem'),
   save: document.getElementById('btnSaveSale'),
@@ -457,10 +462,12 @@ const elV = {
 function addToCart(){
   const pid = elV.product.value;
   const qty = Math.max(1, parseInt(elV.qty.value||'1',10));
+  const obs = (elV.obs.value||'').trim();
   const prod = state.produtos.find(p=>p.id===pid);
   if(!prod){ toast("Selecione um produto"); return }
-  const ex = state.cart.find(i=>i.productId===pid);
-  if(ex){ ex.qty += qty } else { state.cart.push({productId:pid, qty, price:+prod.valor, name:prod.nome}) }
+  const ex = state.cart.find(i=>i.productId===pid && (i.obs||'')===obs);
+  if(ex){ ex.qty += qty } else { state.cart.push({productId:pid, qty, price:+prod.valor, name:prod.nome, obs}) }
+  elV.obs.value=''; // limpa obs após adicionar
   renderCart(); toast("Item adicionado");
 }
 
@@ -472,10 +479,11 @@ function renderCart(){
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${escapeHtml(it.name)}</td>
-      <td><input type="number" min="1" value="${it.qty}" data-p="${it.productId}" class="mono"></td>
+      <td><input type="number" min="1" value="${it.qty}" data-p="${it.productId}" data-k="qty" class="mono"></td>
       <td>${brl(it.price)}</td>
       <td>${brl(line)}</td>
-      <td><button class="btn danger" data-rm="${it.productId}">X</button></td>`;
+      <td><input value="${escapeHtml(it.obs||'')}" placeholder="Obs..." data-p="${it.productId}" data-k="obs"></td>
+      <td><button class="btn danger" data-rm="${it.productId}" data-obs="${escapeHtml(it.obs||'')}">X</button></td>`;
     elV.cartTbody.appendChild(tr);
   }
   elV.cartTotal.textContent = brl(tot);
@@ -484,12 +492,20 @@ function renderCart(){
 function handleCart(e){
   const rm = e.target.getAttribute('data-rm');
   if(rm){
-    state.cart = state.cart.filter(i=>i.productId!==rm); renderCart(); return;
+    const rmObs = e.target.getAttribute('data-obs') || '';
+    state.cart = state.cart.filter(i=>!(i.productId===rm && (i.obs||'')===rmObs));
+    renderCart(); return;
   }
-  if(e.target.matches('input[type="number"][data-p]')){
+  if(e.target.matches('[data-p][data-k]')){
     const pid = e.target.getAttribute('data-p');
-    const it = state.cart.find(i=>i.productId===pid); if(!it) return;
-    it.qty = Math.max(1, parseInt(e.target.value||'1',10)); renderCart();
+    const k = e.target.getAttribute('data-k');
+    const it = state.cart.find(i=>i.productId===pid && ((i.obs||'')===(e.target.closest('tr')?.querySelector('[data-k="obs"]')?.value||'')));
+    // fallback: se não achar pelo obs, pega o primeiro do pid
+    const item = it || state.cart.find(i=>i.productId===pid);
+    if(!item) return;
+    if(k==='qty'){ item.qty = Math.max(1, parseInt(e.target.value||'1',10)); }
+    if(k==='obs'){ item.obs = e.target.value; }
+    renderCart();
   }
 }
 
@@ -502,7 +518,7 @@ function saveSale(){
     id: uid(),
     ts: Date.now(),
     client: { id:cli.id, nome:cli.nome, telefone:cli.telefone||'', endereco:cli.endereco||'', complemento:cli.complemento||'' },
-    items: state.cart.map(i=>({productId:i.productId, name:i.name, qty:i.qty, price:+i.price})),
+    items: state.cart.map(i=>({productId:i.productId, name:i.name, qty:i.qty, price:+i.price, obs:i.obs||''})),
     payment: elV.pay.value,
     route: elV.route.value,
     total: state.cart.reduce((s,i)=>s+i.qty*i.price,0)
@@ -543,229 +559,4 @@ function renderRelatorio(){
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${when}</td>
-        <td>${escapeHtml(o.client.nome)}</td>
-        <td>${escapeHtml(o.payment)}</td>
-        <td>${brl(o.total)}</td>
-        <td class="row" style="justify-content:flex-end;gap:6px">
-          <button class="btn" data-view="${o.id}">Ver</button>
-          <button class="btn soft" data-share="${o.id}">Compartilhar</button>
-          <button class="btn danger" data-del="${o.id}">Excluir</button>
-        </td>`;
-      tb.appendChild(tr);
-    }
-    table.appendChild(tb);
-    wrap.appendChild(table);
-    box.appendChild(wrap);
-    relEl.appendChild(box);
-  }
-}
-
-function handleRelatorio(e){
-  const id = e.target.getAttribute('data-del');
-  const v  = e.target.getAttribute('data-view');
-  const s  = e.target.getAttribute('data-share');
-  if(id){ state.pedidos = state.pedidos.filter(p=>p.id!==id); saveAll(); renderRelatorio(); toast("Pedido excluído"); return; }
-  if(v){ openOrderViewer(v); return; }
-  if(s){ shareOrder(s); return; }
-}
-
-function buildOrderPayload(order){
-  const slim = {
-    id: order.id,
-    ts: order.ts,
-    c: { n:order.client.nome, t:order.client.telefone||'', e:order.client.endereco||'', x:order.client.complemento||'' },
-    r: order.route,
-    p: order.payment,
-    it: order.items.map(i=>({n:i.name,q:i.qty,pr:i.price})),
-  };
-  slim.tt = order.items.reduce((s,i)=>s+i.q*i.pr,0);
-  return slim;
-}
-
-function encodeOrderToHash(order){
-  const json = JSON.stringify(buildOrderPayload(order));
-  const b64  = btoa(unescape(encodeURIComponent(json))).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
-  return `#pedido=${b64}`;
-}
-
-async function shareOrder(orderId){
-  const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
-  const link = location.origin + location.pathname + encodeOrderToHash(o);
-
-  const lines = [];
-  lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
-  lines.push(`Cliente: ${o.client.nome}`);
-  if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco}`);
-  if(o.client.complemento) lines.push(`Complemento: ${o.client.complemento}`);
-  lines.push(`Rota: ${o.route} • Pagamento: ${o.payment}`);
-  lines.push('Itens:');
-  for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)} = ${brl(it.qty*it.price)}`) }
-  lines.push(`Total: *${brl(o.total)}*`);
-  lines.push('');
-  lines.push(`Ver pedido completo: ${link}`);
-  const msg = lines.join('\n');
-
-  if(navigator.share){
-    try{ await navigator.share({title:'Pedido',text:msg,url:link}); toast("Compartilhado"); return; }catch{}
-  }
-  try{
-    const url = waLink(o.client.telefone, msg);
-    location.href = url; // evita bloqueio de popup
-  }catch{
-    try{ await navigator.clipboard.writeText(msg+'\n'+link); toast("Copiado. Cole no WhatsApp."); }
-    catch{ alert("Copie e envie:\n\n"+msg+"\n"+link); }
-  }
-}
-
-function openOrderViewer(orderId){
-  const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
-  location.hash = encodeOrderToHash(o);
-}
-
-/* ===============================
-   BACKUP
-=================================*/
-const btnBackup = document.getElementById('btnBackup');
-const fileImport = document.getElementById('fileImport');
-
-btnBackup.addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify({
-    clientes: state.clientes, produtos: state.produtos, pedidos: state.pedidos
-  }, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'backup-cestas.json'; a.click();
-  URL.revokeObjectURL(url);
-});
-
-fileImport.addEventListener('change', (e)=>{
-  const f = e.target.files?.[0]; if(!f) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    try{
-      const data = JSON.parse(reader.result);
-      if(Array.isArray(data.clientes)) state.clientes = data.clientes;
-      if(Array.isArray(data.produtos)) state.produtos = data.produtos;
-      if(Array.isArray(data.pedidos))  state.pedidos  = data.pedidos;
-      saveAll();
-      renderClientes(); renderProdutos(); renderRelatorio(); renderCart();
-      toast("Backup importado");
-    }catch(err){ toast("Arquivo inválido") }
-  };
-  reader.readAsText(f,'utf-8');
-});
-
-/* ===============================
-   VISOR (#pedido=...)
-=================================*/
-function tryRenderPedidoFromHash(){
-  const h = location.hash || '';
-  const m = h.match(/^#pedido=([A-Za-z0-9\-_]+)$/);
-  if(!m){ return false }
-  const b64 = m[1].replace(/-/g,'+').replace(/_/g,'/');
-  try{
-    const json = decodeURIComponent(escape(atob(b64)));
-    const o = JSON.parse(json);
-    renderPedidoView(o);
-    show(VIEWS.pedido);
-    return true;
-  }catch(e){
-    toast("Link de pedido inválido");
-    return false;
-  }
-}
-
-function renderPedidoView(o){
-  const card = document.getElementById('pedidoCard');
-  const when = new Date(o.ts).toLocaleString('pt-BR');
-  const total = o.tt ?? o.it.reduce((s,i)=>s+i.q*i.pr,0);
-  const tel = o.c?.t || '';
-  const telHref = telLink(tel);
-  const waMsg  = "Olá aqui e da Cesta Básica, estamos chegando"; // mensagem exigida
-  const waHref = waLink(tel, waMsg);
-  const addr   = (o.c?.e || '').trim();
-  const mapHref = addr ? mapsSearch(addr) : null; // só ENDEREÇO (sem complemento)
-
-  const itemsHtml = o.it.map(i=>`
-    <tr><td>${escapeHtml(i.n)}</td><td>${i.q}</td><td>${brl(i.pr)}</td><td>${brl(i.q*i.pr)}</td></tr>
-  `).join('');
-
-  card.innerHTML = `
-    <h3>🧾 Pedido</h3>
-    <div class="row" style="justify-content:space-between">
-      <div>${when} • Rota <b>${escapeHtml(o.r)}</b> • Pgto <b>${escapeHtml(o.p)}</b></div>
-      <div><span class="badge mono">${escapeHtml(o.id||'')}</span></div>
-    </div>
-    <div class="hr"></div>
-    <div class="cliente-info">
-      <div><b>Cliente:</b> <span class="valor">${escapeHtml(o.c?.n||'')}</span></div>
-      <div><b>Endereço:</b> <span class="valor">${escapeHtml(o.c?.e||'')}</span></div>
-      ${o.c?.x ? `<div><b>Complemento:</b> <span class="valor">${escapeHtml(o.c.x)}</span></div>` : ``}
-    </div>
-    <div class="hr"></div>
-    <div class="table-scroll">
-      <table>
-        <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th></tr></thead>
-        <tbody>${itemsHtml}</tbody>
-        <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th>${brl(total)}</th></tr></tfoot>
-      </table>
-    </div>
-    <div class="hr"></div>
-    <div class="cta3">
-      <a class="btn" ${telHref?`href="${telHref}"`:'aria-disabled="true"'}>Ligar</a>
-      <a class="btn primary" target="_blank" ${waHref?`href="${waHref}"`:'aria-disabled="true"'}>WhatsApp</a>
-      <a class="btn soft" target="_blank" ${mapHref?`href="${mapHref}"`:'aria-disabled="true"'}>Google Maps</a>
-    </div>
-    <div class="hr"></div>
-    <a class="link" href="${location.origin+location.pathname}">Voltar para o painel</a>
-  `;
-}
-
-/* ===============================
-   UTIL
-=================================*/
-function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])) }
-
-/* ===============================
-   WIRES
-=================================*/
-document.getElementById('btnHome').onclick = ()=>show(VIEWS.home);
-document.getElementById('btnVender').onclick = ()=>{ show(VIEWS.vender); renderClientes(); renderProdutos(); };
-document.getElementById('btnClientes').onclick = ()=>{ show(VIEWS.clientes); renderClientes(); };
-document.getElementById('btnProdutos').onclick = ()=>{ show(VIEWS.produtos); renderProdutos(); };
-document.getElementById('btnRelatorio').onclick = ()=>{ show(VIEWS.rel); renderRelatorio(); };
-document.getElementById('goVender').onclick = ()=>document.getElementById('btnVender').click();
-document.getElementById('goClientes').onclick = ()=>document.getElementById('btnClientes').click();
-document.getElementById('goProdutos').onclick = ()=>document.getElementById('btnProdutos').click();
-document.getElementById('goRelatorio').onclick = ()=>document.getElementById('btnRelatorio').click();
-
-document.getElementById('btnAddCliente').onclick = addCliente;
-elC.tbl.addEventListener('click', handleClientesTable);
-elC.csv.addEventListener('change', e=>{ if(e.target.files?.[0]) importClientesCSV(e.target.files[0]) });
-
-// filtro de cliente (venda)
-const saleClientSearch = document.getElementById('saleClientSearch');
-if (saleClientSearch) saleClientSearch.addEventListener('input', renderClientes);
-
-document.getElementById('btnAddProduto').onclick = addProduto;
-elP.tbl.addEventListener('click', handleProdutosTable);
-
-elV.add.onclick = addToCart;
-document.getElementById('cartTable').addEventListener('input', handleCart);
-document.getElementById('cartTable').addEventListener('click', handleCart);
-elV.save.onclick = saveSale;
-
-document.getElementById('relContent').addEventListener('click', handleRelatorio);
-
-document.getElementById('btnBackup').insertAdjacentHTML('afterend','<button class="btn" id="btnImport">Importar</button>');
-document.getElementById('btnImport').onclick = ()=>fileImport.click();
-
-/* ===============================
-   INÍCIO
-=================================*/
-window.addEventListener('hashchange', ()=>{ tryRenderPedidoFromHash(); });
-if(!tryRenderPedidoFromHash()){ show(VIEWS.home); renderClientes(); renderProdutos(); }
-
-</script>
-</body>
-</html>
+        <td>${escapeHtml(o.client.nome
