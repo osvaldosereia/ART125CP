@@ -22,12 +22,13 @@
     <!-- atalhos -->
     <section class="grid">
       <button class="tile" data-view="vender">Vender</button>
-      <button class="tile" data-view="clientes">Cadastrar Cliente</button>
-      <button class="tile" data-view="produtos">Cadastrar Produto</button>
+      <button class="tile" data-view="clientes">Clientes</button>
+      <button class="tile" data-view="produtos">Produtos</button>
       <button class="tile" data-view="entregadores">Entregadores</button>
       <button class="tile" data-view="andre">André</button>
       <button class="tile" data-view="claudio">Cláudio</button>
       <button class="tile" data-view="junior">Júnior</button>
+      <button class="tile accent" data-view="admin">ADM</button>
     </section>
 
     <!-- vender -->
@@ -79,7 +80,7 @@
 
     <!-- clientes -->
     <section id="view-clientes" class="view">
-      <h2>Cadastrar Cliente</h2>
+      <h2>Clientes</h2>
       <div class="row">
         <div class="field"><label>Nome</label><input id="cliNome" placeholder="Nome completo"></div>
         <div class="field"><label>Telefone</label><input id="cliTel" placeholder="(DDD) número"></div>
@@ -104,10 +105,10 @@
 
     <!-- produtos -->
     <section id="view-produtos" class="view">
-      <h2>Cadastrar Produto</h2>
+      <h2>Produtos</h2>
       <div class="row">
         <div class="field"><label>Tamanho</label><input id="prdTam" placeholder="Pequena / Média / Grande"></div>
-        <div class="field"><label>Tipo de Arroz</</label><input id="prdArroz" placeholder="Branco / Parboilizado / Integral"></div>
+        <div class="field"><label>Tipo de Arroz</label><input id="prdArroz" placeholder="Branco / Parboilizado / Integral"></div>
         <div class="field"><label>Valor (R$)</label><input id="prdValor" type="number" step="0.01" placeholder="0,00"></div>
       </div>
       <button id="btnSalvarProduto" class="primary">Salvar produto</button>
@@ -115,7 +116,7 @@
       <div id="listaProdutos" class="list"></div>
     </section>
 
-    <!-- entregadores (cadastro) -->
+    <!-- entregadores (cadastro + rotas) -->
     <section id="view-entregadores" class="view">
       <h2>Entregadores</h2>
       <div class="row">
@@ -124,7 +125,7 @@
       </div>
       <button id="btnSalvarEntregador" class="primary">Salvar entregador</button>
 
-      <div class="hint">Os botões “André / Cláudio / Júnior” usam o nome cadastrado aqui para encontrar o entregador e mostrar os pedidos dele.</div>
+      <div class="hint">Os botões “André / Cláudio / Júnior” usam o nome cadastrado aqui para localizar o entregador.</div>
 
       <div id="listaEntregadores" class="list"></div>
 
@@ -138,7 +139,7 @@
     <section id="view-andre" class="view">
       <h2>Pedidos — André</h2>
       <div class="row">
-        <span class="origin">Origem: 
+        <span class="origin">Origem:
           <label><input type="radio" name="orig-andre" value="site" checked> Site</label>
           <label><input type="radio" name="orig-andre" value="arquivo"> Arquivo</label>
         </span>
@@ -181,6 +182,49 @@
         <button class="ghost small" data-send="Júnior">Enviar rota (WhatsApp)</button>
       </div>
       <div id="cards-junior" class="cards droplist" data-entregador="Júnior"></div>
+    </section>
+
+    <!-- ADM -->
+    <section id="view-admin" class="view">
+      <h2>ADM — Painel</h2>
+      <div class="row">
+        <div class="field">
+          <label>Filtro por período</label>
+          <select id="admPeriodo">
+            <option value="hoje">Hoje</option>
+            <option value="sete">Últimos 7 dias</option>
+            <option value="mes">Últimos 30 dias</option>
+            <option value="todos" selected>Todos</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="admStatus">
+            <option value="todos" selected>Todos</option>
+            <option value="Pendente">Pendentes</option>
+            <option value="Entregue">Entregues</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button id="btnAdmExportPedidos" class="ghost">Exportar pedidos (CSV)</button>
+        </div>
+      </div>
+
+      <div class="adm-grid">
+        <div class="adm-card">
+          <h3>Resumo</h3>
+          <div id="admResumo" class="kpis"></div>
+        </div>
+        <div class="adm-card">
+          <h3>Por Entregador</h3>
+          <div id="admByEntregador" class="table"></div>
+        </div>
+        <div class="adm-card">
+          <h3>Lista</h3>
+          <div id="admLista" class="table"></div>
+        </div>
+      </div>
     </section>
   </main>
 
