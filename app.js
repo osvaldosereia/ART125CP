@@ -49,6 +49,16 @@ const fmtDate = ts => new Date(ts).toLocaleString("pt-BR");
 const todayStart = ()=>{ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); };
 const daysAgoStart = n=>{ const d=new Date(); d.setDate(d.getDate()-n); d.setHours(0,0,0,0); return d.getTime(); };
 
+/* ---------- normalizador de rota (desarma JSON duplo) ---------- */
+function loadRota(nome){
+  let r = load(KEY.rota(nome), []);
+  if (typeof r === "string") {
+    try { r = JSON.parse(r); } catch(e) {}
+  }
+  if (!Array.isArray(r)) r = [];
+  return r;
+}
+
 /* ---- navegação ---- */
 $$(".tile").forEach(btn=>btn.addEventListener("click",()=>openView(btn.dataset.view)));
 function openView(name){
@@ -350,7 +360,7 @@ function renderEntregadorPage(view){
   box.innerHTML="";
   let pedidos=[];
   if(origin==="arquivo"){
-    pedidos = load(KEY.rota(nome), []);
+    pedidos = loadRota(nome);
   }else{
     pedidos = state.pedidos.filter(p=>p.entregador===nome && p.status!=="Entregue");
   }
@@ -446,7 +456,7 @@ function persistOrder(container, view){
   }else{
     const mapName = {"andre":"André","claudio":"Cláudio","junior":"Júnior"};
     const nome = mapName[view] || view;
-    let rota = load(KEY.rota(nome), []);
+    let rota = loadRota(nome);
     const byId = Object.fromEntries((rota||[]).map(p=>[p.id, p]));
     rota = ids.map(id=>byId[id]).filter(Boolean).map((p,i)=>({...p, sort:now+i}));
     save(KEY.rota(nome), rota);
