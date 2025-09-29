@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistema de Pedidos</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sistema de Pedidos</h1>
+    <nav class="top-actions">
+      <button id="btnExport" class="ghost">Exportar JSON</button>
+      <label class="ghost file-label">
+        Importar JSON
+        <input id="importJson" type="file" accept=".json" hidden>
+      </label>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- NAV PRINCIPAL -->
+    <section class="grid">
+      <button class="tile" data-view="vender">Vender</button>
+      <button class="tile" data-view="clientes">Cadastrar Cliente</button>
+      <button class="tile" data-view="produtos">Cadastrar Produto</button>
+      <button class="tile" data-view="andre">André</button>
+      <button class="tile" data-view="claudio">Cláudio</button>
+      <button class="tile" data-view="junior">Júnior</button>
+    </section>
+
+    <!-- VENDER -->
+    <section id="view-vender" class="view">
+      <h2>Vender</h2>
+
+      <div class="field">
+        <label>Cliente</label>
+        <input id="pedidoCliente" list="clientesList" placeholder="Digite o nome" autocomplete="off">
+        <datalist id="clientesList"></datalist>
+      </div>
+
+      <div class="field">
+        <label>Produto</label>
+        <select id="pedidoProduto"></select>
+      </div>
+
+      <div class="field">
+        <label>Observação</label>
+        <textarea id="pedidoObs" rows="2" placeholder="Ex.: trocar arroz por parboilizado"></textarea>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Forma de pagamento</label>
+          <select id="pedidoPagamento">
+            <option value="" selected>Selecione</option>
+            <option>Cartão</option>
+            <option>Dinheiro</option>
+            <option>Pix</option>
+            <option>Só entregar</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Entregador</label>
+          <select id="pedidoEntregador">
+            <option>André</option>
+            <option>Cláudio</option>
+            <option>Júnior</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Dia da entrega</label>
+          <select id="pedidoDia">
+            <option>Segunda</option><option>Terça</option><option>Quarta</option>
+            <option>Quinta</option><option>Sexta</option><option>Sábado</option><option>Domingo</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="btnSalvarPedido" class="primary">Salvar pedido</button>
+    </section>
+
+    <!-- CLIENTES -->
+    <section id="view-clientes" class="view">
+      <h2>Cadastrar Cliente</h2>
+      <div class="row">
+        <div class="field"><label>Nome</label><input id="cliNome" placeholder="Nome completo"></div>
+        <div class="field"><label>Telefone</label><input id="cliTel" placeholder="(DDD) número"></div>
+      </div>
+      <div class="row">
+        <div class="field grow"><label>Endereço</label><input id="cliEnd" placeholder="Rua, número, bairro, cidade"></div>
+        <div class="field"><label>Complemento</label><input id="cliComp" placeholder="Casa 2, portão azul..."></div>
+      </div>
+      <button id="btnSalvarCliente" class="primary">Salvar cliente</button>
+
+      <hr>
+      <div class="row">
+        <label class="ghost file-label">
+          Importar CSV de clientes
+          <input id="csvClientes" type="file" accept=".csv" hidden>
+        </label>
+        <button id="btnExportClientes" class="ghost">Exportar clientes (CSV)</button>
+      </div>
+
+      <div id="listaClientes" class="list"></div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section id="view-produtos" class="view">
+      <h2>Cadastrar Produto</h2>
+      <div class="row">
+        <div class="field"><label>Tamanho</label><input id="prdTam" placeholder="Ex.: Pequena / Média / Grande"></div>
+        <div class="field"><label>Tipo de Arroz</label><input id="prdArroz" placeholder="Ex.: Branco / Parboilizado / Integral"></div>
+        <div class="field"><label>Valor (R$)</label><input id="prdValor" type="number" step="0.01" placeholder="0,00"></div>
+      </div>
+      <button id="btnSalvarProduto" class="primary">Salvar produto</button>
+
+      <div id="listaProdutos" class="list"></div>
+    </section>
+
+    <!-- ENTREGADORES -->
+    <section id="view-andre" class="view">
+      <h2>Pedidos — André</h2>
+      <div id="cards-andre" class="cards droplist" data-entregador="André"></div>
+    </section>
+
+    <section id="view-claudio" class="view">
+      <h2>Pedidos — Cláudio</h2>
+      <div id="cards-claudio" class="cards droplist" data-entregador="Cláudio"></div>
+    </section>
+
+    <section id="view-junior" class="view">
+      <h2>Pedidos — Júnior</h2>
+      <div id="cards-junior" class="cards droplist" data-entregador="Júnior"></div>
+    </section>
+  </main>
+
+  <!-- TEMPLATE DE RECIBO PARA IMPRESSÃO 58mm -->
+  <div id="print-root" aria-hidden="true"></div>
+
+  <footer class="bottombar">
+    <small>💼 Sistema de Pedidos — offline-first (localStorage)</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
