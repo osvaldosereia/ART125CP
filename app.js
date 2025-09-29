@@ -70,9 +70,11 @@ function hydrateVender(){
   dl.innerHTML=state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))
     .map(c=>`<option value="${escapeHTML(c.nome)}">${escapeHTML(c.nome)}</option>`).join("");
   // produtos
-  $("#pedidoProduto").innerHTML = state.produtos.map(p=>`
-    <option value="${p.id}">${escapeHTML(p.tam)} — ${escapeHTML(p.arroz)} — ${money(p.valor)}</option>
-  `).join("");
+  $("#pedidoProduto").innerHTML = state.produtos.length
+    ? state.produtos.map(p=>`
+        <option value="${p.id}">${escapeHTML(p.tam)} — ${escapeHTML(p.arroz)} — ${money(p.valor)}</option>
+      `).join("")
+    : `<option value="">Cadastre um produto</option>`;
   // entregadores
   $("#pedidoEntregador").innerHTML = state.entregadores.map(e=>`
     <option>${escapeHTML(e.nome)}</option>
@@ -155,7 +157,10 @@ $("#csvClientes").addEventListener("change", async (e)=>{
   const text=await f.text();
   const rows=text.split(/\r?\n/).map(r=>r.trim()).filter(Boolean);
   let ok=0,fail=0;
-  for(const r of rows){
+  let start=0;
+  if(rows[0]?.toLowerCase().startsWith("nome,")) start=1; // ignora header
+  for(let i=start;i<rows.length;i++){
+    const r=rows[i];
     const [nome,tel,end,comp]=(r.split(",").map(s=>s?.trim()||""));
     if(!nome||!tel||!end){fail++; continue;}
     state.clientes.push({id:uid(), nome,tel,end,comp}); ok++;
@@ -165,14 +170,14 @@ $("#csvClientes").addEventListener("change", async (e)=>{
 });
 $("#btnExportClientes").addEventListener("click", ()=>{
   const header="nome,telefone,endereco,complemento\n";
-  const body=state.clientes.map(c=>[c.nome,c.tel,c.end,c.comp||""].map(s=>String(s).replace(/,/g," ")).join(",")).join("\n");
+  const body=state.clientes.map(c=>[c.nome,c.tel,(c.end||"").replace(/,/g," "), (c.comp||"").replace(/,/g," ")].join(",")).join("\n");
   downloadText("clientes.csv", header+body);
 });
 
 /* ---- produtos ---- */
 $("#btnSalvarProduto").addEventListener("click", ()=>{
   const tam=norm($("#prdTam").value), arroz=norm($("#prdArroz").value), valor=Number($("#prdValor").value||0);
-  if(!tam || !arroz || !valor) return alert("Preencha tamanho, tipo e valor.");
+  if(!tam || !arroz || isNaN(valor)) return alert("Preencha tamanho, tipo e valor numérico.");
   state.produtos.push({id:uid(), tam, arroz, valor}); persist("produtos");
   $("#prdTam").value=$("#prdArroz").value=$("#prdValor").value="";
   renderProdutos(); hydrateVender(); alert("Produto salvo!");
@@ -298,29 +303,45 @@ function pick(obj,keys){ if(!obj) return null; const o={}; keys.forEach(k=>o[k]=
 function renderEntregadorPage(view){
   const mapName = {"andre":"André","claudio":"Cláudio","junior":"Júnior"};
   const nome = mapName[view] || view;
+
   // origem: site/arquivo
   const radios = $$(`input[name="orig-${view}"]`);
   const origin = (radios.find(r=>r.checked)?.value)||"site";
 
-  // upload de rota (arquivo)
+  // upload de rota (arquivo) — com null-check e normalização
   const up = $(`#upload-${view}`);
-  up.onchange = async (e)=>{
-    const f=e.target.files[0]; if(!f) return;
-    try{
-      const json = JSON.parse(await f.text());
-      const pedidos = Array.isArray(json)? json : (json.pedidos||[]);
-      localStorage.setItem(KEY.rota(nome), JSON.stringify(pedidos));
-      alert("Rota carregada. Selecione 'Origem: Arquivo'.");
-      renderEntregadorPage(view);
-    }catch(err){ alert("Arquivo inválido."); }
-  };
+  if (up){
+    up.onchange = async (e)=>{
+      const f=e.target.files[0]; if(!f) return;
+      try{
+        const json = JSON.parse(await f.text());
+        let pedidos = Array.isArray(json)? json : (json.pedidos||[]);
+        const now = Date.now();
+        pedidos = pedidos.map((p,i)=>({
+          id: p.id || uid(),
+          cliente: p.cliente || null,
+          produto: p.produto || null,
+          obs: p.obs || "",
+          pagamento: p.pagamento || "",
+          dia: p.dia || "",
+          sort: Number.isFinite(p.sort) ? p.sort : (now + i)
+        }));
+        save(KEY.rota(nome), pedidos); // evita dupla serialização
+        alert("Rota carregada. Selecione 'Origem: Arquivo'.");
+        renderEntregadorPage(view);
+      }catch(err){ alert("Arquivo inválido."); }
+    };
+  }
 
   // atalho enviar rota
   const btnSend = $(`#view-${view} [data-send="${nome}"]`);
-  btnSend.onclick = async ()=>{ const blob = buildRotaBlob(nome); await shareToWhats(nome, blob); };
+  if (btnSend){
+    btnSend.onclick = async ()=>{ const blob = buildRotaBlob(nome); await shareToWhats(nome, blob); };
+  }
 
   // render cards
-  const box = $(`#cards-${view}`); box.innerHTML="";
+  const box = $(`#cards-${view}`); if(!box) return;
+  box.innerHTML="";
   let pedidos=[];
   if(origin==="arquivo"){
     pedidos = load(KEY.rota(nome), []);
@@ -422,14 +443,9 @@ function persistOrder(container, view){
     let rota = load(KEY.rota(nome), []);
     const byId = Object.fromEntries((rota||[]).map(p=>[p.id, p]));
     rota = ids.map(id=>byId[id]).filter(Boolean).map((p,i)=>({...p, sort:now+i}));
-    // ✅ use UM dos dois jeitos abaixo (ambos corretos). Recomendo o 1:
-    // 1) salvar objeto usando helper (ele stringify por você)
     save(KEY.rota(nome), rota);
-    // 2) OU salvar manualmente no localStorage:
-    // localStorage.setItem(KEY.rota(nome), JSON.stringify(rota));
   }
 }
-
 
 /* impressão 58mm */
 function printPedido(ped, cliOpt, prdOpt){
