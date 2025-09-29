@@ -11,6 +11,1744 @@
     --card:#ffffff;
   }
   *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  .wrap{max-width:980px;margin:0 auto;padding:16px}
+  .top{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);z-index:9}
+  .top .wrap{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  h1{font-size:18px;margin:12px 0}
+  .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer}
+  .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .btn.soft{background:var(--soft);border-color:var(--soft);color:#1e3a8a}
+  .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .btn.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+  .btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .row > *{flex:1}
+  label{font-weight:600;margin:8px 0 4px;display:block}
+  input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+  .stack{display:flex;flex-direction:column;gap:12px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .hidden{display:none}
+  .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:12px}
+  .route{font-weight:700}
+  .footer{margin-top:24px;display:flex;gap:8px;flex-wrap:wrap}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:.3s}
+  .toast.show{opacity:1;pointer-events:auto}
+  .badge{font-size:12px;padding:2px 6px;border-radius:8px;background:var(--soft);color:#1e3a8a;border:1px solid var(--soft)}
+  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+  .link{color:var(--primary);text-decoration:none}
+  .hr{height:1px;background:var(--line);margin:10px 0}
+  .cta3{display:flex;gap:8px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="wrap">
+      <h1>🧺 Cestas — Painel</h1>
+      <div class="toolbar">
+        <button class="btn soft" id="btnHome">Início</button>
+        <button class="btn" id="btnVender">Vender</button>
+        <button class="btn" id="btnClientes">Clientes</button>
+        <button class="btn" id="btnProdutos">Produtos</button>
+        <button class="btn primary" id="btnRelatorio">Relatório</button>
+        <button class="btn" id="btnBackup">Backup</button>
+        <input type="file" id="fileImport" class="hidden" accept=".json">
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- HOME -->
+    <div id="viewHome" class="stack">
+      <div class="card">
+        <div class="grid">
+          <button class="btn primary" id="goVender">Vender</button>
+          <button class="btn" id="goClientes">Cliente</button>
+          <button class="btn" id="goProdutos">Produto</button>
+          <button class="btn soft" id="goRelatorio">Relatório de vendas</button>
+        </div>
+      </div>
+      <div class="card">
+        <b>Dica rápida:</b> cadastre produtos e clientes primeiro. Em <i>Relatório</i>, compartilhe o pedido por WhatsApp — o link abre o pedido com <b>Ligar</b>, <b>WhatsApp</b> e <b>Google Maps</b>.
+      </div>
+    </div>
+
+    <!-- VENDER -->
+    <div id="viewVender" class="stack hidden">
+      <div class="card">
+        <h3>Vender</h3>
+        <div class="grid">
+          <div>
+            <label>Cliente</label>
+            <select id="saleClient"></select>
+          </div>
+          <div>
+            <label>Pagamento</label>
+            <select id="salePay">
+              <option value="Cartão">Cartão</option>
+              <option value="Dinheiro">Dinheiro</option>
+              <option value="PIX">PIX</option>
+              <option value="Fiado">Fiado</option>
+            </select>
+          </div>
+          <div>
+            <label>Rota</label>
+            <select id="saleRoute">
+              <option value="Coxipó">Coxipó</option>
+              <option value="VG">VG</option>
+              <option value="Cuiabá">Cuiabá</option>
+              <option value="CPA">CPA</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="grid">
+          <div>
+            <label>Produto</label>
+            <select id="saleProduct"></select>
+          </div>
+          <div>
+            <label>Qtd</label>
+            <input type="number" id="saleQty" min="1" value="1">
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button class="btn" id="btnAddItem">Adicionar item</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div>
+          <table id="cartTable">
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th><th></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th id="cartTotal">$ 0,00</th><th></th></tr></tfoot>
+          </table>
+        </div>
+        <div class="footer">
+          <button class="btn ok" id="btnSaveSale">Salvar pedido</button>
+          <span class="pill">Pedidos salvos ficam em Relatório</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="viewClientes" class="stack hidden">
+      <div class="card">
+        <h3>Novo cliente</h3>
+        <div class="grid">
+          <div><label>Nome</label><input id="cNome"></div>
+          <div><label>Telefone (apenas números)</label><input id="cTel" placeholder="65999999999"></div>
+          <div><label>Endereço</label><input id="cEnd"></div>
+          <div><label>Complemento</label><input id="cComp"></div>
+        </div>
+        <div class="footer">
+          <button class="btn ok" id="btnAddCliente">Salvar cliente</button>
+          <label class="btn">
+            Subir CSV de clientes
+            <input type="file" id="csvClientes" accept=".csv" class="hidden">
+          </label>
+          <span class="pill">CSV: nome,telefone,endereco,complemento</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Clientes</h3>
+        <table id="tblClientes"><thead><tr><th>Nome</th><th>Telefone</th><th>Endereço</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div id="viewProdutos" class="stack hidden">
+      <div class="card">
+        <h3>Novo produto</h3>
+        <div class="grid">
+          <div><label>Nome</label><input id="pNome"></div>
+          <div><label>Valor (R$)</label><input id="pValor" type="number" step="0.01" min="0"></div>
+        </div>
+        <div class="footer">
+          <button class="btn ok" id="btnAddProduto">Salvar produto</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Produtos</h3>
+        <table id="tblProdutos"><thead><tr><th>Nome</th><th>Valor</th><th></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <!-- RELATÓRIO -->
+    <div id="viewRelatorio" class="stack hidden">
+      <div class="card">
+        <h3>Relatório de vendas por rota</h3>
+        <div id="relContent" class="stack"></div>
+      </div>
+    </div>
+
+    <!-- VISOR DE PEDIDO COMPARTILHADO -->
+    <div id="viewPedido" class="stack hidden">
+      <div class="card" id="pedidoCard">
+        <!-- preenchido via hash #pedido=... -->
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ===============================
+   STORAGE & ESTADO
+=================================*/
+const KEY = {
+  clientes: "cx_clientes",
+  produtos: "cx_produtos",
+  pedidos:  "cx_pedidos"
+};
+
+const state = {
+  clientes: load(KEY.clientes, []),
+  produtos: load(KEY.produtos, []),
+  pedidos:  load(KEY.pedidos,  []),
+  cart: []
+};
+
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36) }
+function load(k, fallback){ try{ return JSON.parse(localStorage.getItem(k)||"null") ?? fallback }catch{ return fallback } }
+function saveAll(){ localStorage.setItem(KEY.clientes, JSON.stringify(state.clientes));
+                    localStorage.setItem(KEY.produtos, JSON.stringify(state.produtos));
+                    localStorage.setItem(KEY.pedidos,  JSON.stringify(state.pedidos)); }
+
+const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+function brl(n){ return BRL.format(+n||0) }
+function telLink(num){ num = (num||"").replace(/\D+/g,""); if(!num) return null; if(num.length<=11) num = "55"+num; return "tel:+"+num }
+function waLink(num,msg){
+  const n = (num||"").replace(/\D+/g,""); if(!n) return null;
+  const full = (n.length<=11? "55"+n : n);
+  return `https://wa.me/${full}?text=${encodeURIComponent(msg||"")}`;
+}
+function mapsSearch(q){ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q||"")}` }
+
+/* ===============================
+   NAVEGAÇÃO
+=================================*/
+const VIEWS = {
+  home:     document.getElementById('viewHome'),
+  vender:   document.getElementById('viewVender'),
+  clientes: document.getElementById('viewClientes'),
+  produtos: document.getElementById('viewProdutos'),
+  rel:      document.getElementById('viewRelatorio'),
+  pedido:   document.getElementById('viewPedido')
+};
+function show(which){
+  Object.values(VIEWS).forEach(v=>v.classList.add('hidden'));
+  which.classList.remove('hidden');
+}
+
+/* ===============================
+   TOAST
+=================================*/
+const toastEl = document.getElementById('toast');
+function toast(msg, ms=1400){ toastEl.textContent = msg; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'), ms); }
+
+/* ===============================
+   CLIENTES
+=================================*/
+const elC = {
+  nome: document.getElementById('cNome'),
+  tel:  document.getElementById('cTel'),
+  end:  document.getElementById('cEnd'),
+  comp: document.getElementById('cComp'),
+  csv:  document.getElementById('csvClientes'),
+  tbl:  document.getElementById('tblClientes').querySelector('tbody'),
+  selectForSale: document.getElementById('saleClient')
+};
+
+function renderClientes(){
+  // preencher select venda
+  elC.selectForSale.innerHTML = '';
+  if(state.clientes.length===0){
+    elC.selectForSale.innerHTML = '<option value="">-- cadastre clientes --</option>';
+  }else{
+    for(const c of state.clientes.sort((a,b)=>a.nome.localeCompare(b.nome))){
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = `${c.nome} — ${c.telefone||''}`;
+      elC.selectForSale.appendChild(opt);
+    }
+  }
+  // tabela
+  elC.tbl.innerHTML = '';
+  for(const c of state.clientes){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${escapeHtml(c.nome)}" data-id="${c.id}" data-k="nome"></td>
+      <td><input value="${escapeHtml(c.telefone||'')}" data-id="${c.id}" data-k="telefone"></td>
+      <td><input value="${escapeHtml(c.endereco||'')}" data-id="${c.id}" data-k="endereco"></td>
+      <td class="row" style="gap:6px;justify-content:flex-end">
+        <button class="btn" data-edit="${c.id}">Salvar</button>
+        <button class="btn danger" data-del="${c.id}">Excluir</button>
+      </td>`;
+    elC.tbl.appendChild(tr);
+  }
+}
+
+function addCliente(){
+  const nome = elC.nome.value.trim();
+  if(!nome){ toast("Nome é obrigatório"); return }
+  const c = {
+    id: uid(),
+    nome,
+    telefone: elC.tel.value.trim(),
+    endereco: elC.end.value.trim(),
+    complemento: elC.comp.value.trim()
+  };
+  state.clientes.push(c); saveAll(); renderClientes();
+  elC.nome.value=''; elC.tel.value=''; elC.end.value=''; elC.comp.value='';
+  toast("Cliente salvo");
+}
+
+function handleClientesTable(e){
+  const idDel = e.target.getAttribute('data-del');
+  const idEdit= e.target.getAttribute('data-edit');
+  if(idDel){
+    state.clientes = state.clientes.filter(x=>x.id!==idDel); saveAll(); renderClientes(); toast("Cliente removido"); return;
+  }
+  if(idEdit){
+    // coletar campos da linha
+    const inputs = elC.tbl.querySelectorAll(`input[data-id="${idEdit}"]`);
+    const c = state.clientes.find(x=>x.id===idEdit); if(!c) return;
+    inputs.forEach(inp => c[inp.getAttribute('data-k')] = inp.value.trim());
+    saveAll(); renderClientes(); toast("Cliente atualizado"); return;
+  }
+}
+
+function importClientesCSV(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    const txt = reader.result;
+    const lines = txt.split(/\r?\n/).filter(Boolean);
+    let added = 0;
+    for(const line of lines){
+      const parts = line.split(/[,;]\s*/); // vírgula ou ponto-e-vírgula
+      const [nome, telefone, endereco, complemento] = parts;
+      if(nome){
+        state.clientes.push({id:uid(), nome:nome.trim(), telefone:(telefone||'').trim(), endereco:(endereco||'').trim(), complemento:(complemento||'').trim()});
+        added++;
+      }
+    }
+    saveAll(); renderClientes();
+    toast(`Importados ${added} clientes`);
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+/* ===============================
+   PRODUTOS
+=================================*/
+const elP = {
+  nome: document.getElementById('pNome'),
+  valor: document.getElementById('pValor'),
+  tbl: document.getElementById('tblProdutos').querySelector('tbody'),
+  selectForSale: document.getElementById('saleProduct')
+};
+
+function renderProdutos(){
+  // select para venda
+  elP.selectForSale.innerHTML = '';
+  if(state.produtos.length===0){
+    elP.selectForSale.innerHTML = '<option value="">-- cadastre produtos --</option>';
+  }else{
+    for(const p of state.produtos.sort((a,b)=>a.nome.localeCompare(b.nome))){
+      const opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = `${p.nome} — ${brl(p.valor)}`;
+      elP.selectForSale.appendChild(opt);
+    }
+  }
+  // tabela
+  elP.tbl.innerHTML = '';
+  for(const p of state.produtos){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${escapeHtml(p.nome)}" data-id="${p.id}" data-k="nome"></td>
+      <td><input type="number" step="0.01" min="0" value="${+p.valor}" data-id="${p.id}" data-k="valor"></td>
+      <td class="row" style="gap:6px;justify-content:flex-end">
+        <button class="btn" data-edit="${p.id}">Salvar</button>
+        <button class="btn danger" data-del="${p.id}">Excluir</button>
+      </td>`;
+    elP.tbl.appendChild(tr);
+  }
+}
+
+function addProduto(){
+  const nome = elP.nome.value.trim();
+  const valor = parseFloat(elP.valor.value);
+  if(!nome || isNaN(valor)){ toast("Informe nome e valor"); return }
+  state.produtos.push({id:uid(), nome, valor: +valor});
+  saveAll(); renderProdutos(); elP.nome.value=''; elP.valor.value='';
+  toast("Produto salvo");
+}
+
+function handleProdutosTable(e){
+  const idDel = e.target.getAttribute('data-del');
+  const idEdit= e.target.getAttribute('data-edit');
+  if(idDel){
+    state.produtos = state.produtos.filter(x=>x.id!==idDel);
+    // também limpa do carrinho se houver
+    state.cart = state.cart.filter(i=>i.productId!==idDel);
+    saveAll(); renderProdutos(); renderCart(); toast("Produto removido"); return;
+  }
+  if(idEdit){
+    const inputs = elP.tbl.querySelectorAll(`input[data-id="${idEdit}"]`);
+    const p = state.produtos.find(x=>x.id===idEdit); if(!p) return;
+    inputs.forEach(inp => {
+      const k = inp.getAttribute('data-k');
+      p[k] = (k==='valor') ? +parseFloat(inp.value||0) : inp.value.trim();
+    });
+    saveAll(); renderProdutos(); renderCart(); toast("Produto atualizado"); return;
+  }
+}
+
+/* ===============================
+   VENDER / CARRINHO
+=================================*/
+const elV = {
+  pay: document.getElementById('salePay'),
+  route: document.getElementById('saleRoute'),
+  product: document.getElementById('saleProduct'),
+  qty: document.getElementById('saleQty'),
+  client: document.getElementById('saleClient'),
+  add: document.getElementById('btnAddItem'),
+  save: document.getElementById('btnSaveSale'),
+  cartTbody: document.querySelector('#cartTable tbody'),
+  cartTotal: document.getElementById('cartTotal')
+};
+
+function addToCart(){
+  const pid = elV.product.value;
+  const qty = Math.max(1, parseInt(elV.qty.value||'1',10));
+  const prod = state.produtos.find(p=>p.id===pid);
+  if(!prod){ toast("Selecione um produto"); return }
+  const ex = state.cart.find(i=>i.productId===pid);
+  if(ex){ ex.qty += qty } else { state.cart.push({productId:pid, qty, price: +prod.valor, name: prod.nome}) }
+  renderCart(); toast("Item adicionado");
+}
+
+function renderCart(){
+  elV.cartTbody.innerHTML='';
+  let tot = 0;
+  for(const it of state.cart){
+    const line = it.qty * it.price; tot += line;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(it.name)}</td>
+      <td><input type="number" min="1" value="${it.qty}" data-p="${it.productId}" class="mono"></td>
+      <td>${brl(it.price)}</td>
+      <td>${brl(line)}</td>
+      <td><button class="btn danger" data-rm="${it.productId}">X</button></td>`;
+    elV.cartTbody.appendChild(tr);
+  }
+  elV.cartTotal.textContent = brl(tot);
+}
+
+function handleCart(e){
+  const rm = e.target.getAttribute('data-rm');
+  if(rm){
+    state.cart = state.cart.filter(i=>i.productId!==rm); renderCart(); return;
+  }
+  if(e.target.matches('input[type="number"][data-p]')){
+    const pid = e.target.getAttribute('data-p');
+    const it = state.cart.find(i=>i.productId===pid); if(!it) return;
+    it.qty = Math.max(1, parseInt(e.target.value||'1',10)); renderCart();
+  }
+}
+
+function saveSale(){
+  const clientId = elV.client.value;
+  const cli = state.clientes.find(c=>c.id===clientId);
+  if(!cli){ toast("Selecione um cliente"); return }
+  if(state.cart.length===0){ toast("Carrinho vazio"); return }
+  const order = {
+    id: uid(),
+    ts: Date.now(),
+    client: { id: cli.id, nome: cli.nome, telefone: cli.telefone||'', endereco: cli.endereco||'', complemento: cli.complemento||'' },
+    items: state.cart.map(i=>({productId:i.productId, name:i.name, qty:i.qty, price:+i.price})),
+    payment: elV.pay.value,
+    route: elV.route.value,
+    total: state.cart.reduce((s,i)=>s+i.qty*i.price,0)
+  };
+  state.pedidos.push(order); saveAll(); state.cart = []; renderCart();
+  toast("Pedido salvo em Relatório");
+}
+
+/* ===============================
+   RELATÓRIO
+=================================*/
+const relEl = document.getElementById('relContent');
+
+function renderRelatorio(){
+  // Agrupar por rota
+  const byRoute = {};
+  for(const o of state.pedidos){
+    (byRoute[o.route] ||= []).push(o);
+  }
+  const routes = Object.keys(byRoute).sort();
+  relEl.innerHTML = '';
+  if(routes.length===0){
+    relEl.innerHTML = '<div class="pill">Ainda sem pedidos.</div>';
+    return;
+  }
+
+  for(const r of routes){
+    const box = document.createElement('div');
+    const pedidos = byRoute[r].slice().sort((a,b)=>b.ts-a.ts);
+    const totalRoute = pedidos.reduce((s,o)=>s+o.total,0);
+    box.className = 'card';
+    box.innerHTML = `<div class="row" style="justify-content:space-between">
+        <div><span class="route">Rota ${escapeHtml(r)}</span> • <span class="badge">${pedidos.length} pedidos</span></div>
+        <div><b>Total: ${brl(totalRoute)}</b></div>
+      </div>
+      <div class="hr"></div>`;
+
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>Quando</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th></th></tr></thead>`;
+    const tb = document.createElement('tbody');
+
+    for(const o of pedidos){
+      const when = new Date(o.ts).toLocaleString('pt-BR');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${when}</td>
+        <td>${escapeHtml(o.client.nome)}</td>
+        <td>${escapeHtml(o.payment)}</td>
+        <td>${brl(o.total)}</td>
+        <td class="row" style="justify-content:flex-end;gap:6px">
+          <button class="btn" data-view="${o.id}">Ver</button>
+          <button class="btn soft" data-share="${o.id}">Compartilhar</button>
+          <button class="btn danger" data-del="${o.id}">Excluir</button>
+        </td>`;
+      tb.appendChild(tr);
+    }
+    table.appendChild(tb);
+    box.appendChild(table);
+    relEl.appendChild(box);
+  }
+}
+
+function handleRelatorio(e){
+  const id = e.target.getAttribute('data-del');
+  const v  = e.target.getAttribute('data-view');
+  const s  = e.target.getAttribute('data-share');
+  if(id){
+    state.pedidos = state.pedidos.filter(p=>p.id!==id); saveAll(); renderRelatorio(); toast("Pedido excluído"); return;
+  }
+  if(v){ openOrderViewer(v); return; }
+  if(s){ shareOrder(v=null, s); return; }
+}
+
+function buildOrderPayload(order){
+  // payload enxuto pro link
+  const slim = {
+    id: order.id,
+    ts: order.ts,
+    c: { n: order.client.nome, t: order.client.telefone||'', e: order.client.endereco||'', x: order.client.complemento||'' },
+    r: order.route,
+    p: order.payment,
+    it: order.items.map(i=>({n:i.name,q:i.qty,pr:i.price})),
+  };
+  slim.tt = order.items.reduce((s,i)=>s+i.q*i.pr,0);
+  return slim;
+}
+
+function encodeOrderToHash(order){
+  const json = JSON.stringify(buildOrderPayload(order));
+  const b64  = btoa(unescape(encodeURIComponent(json))).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
+  return `#pedido=${b64}`;
+}
+
+function shareOrder(_unused, orderId){
+  const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
+  const link = location.origin + location.pathname + encodeOrderToHash(o);
+  const lines = [];
+  lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
+  lines.push(`Cliente: ${o.client.nome}`);
+  if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco} ${o.client.complemento||''}`.trim());
+  lines.push(`Rota: ${o.route} • Pagamento: ${o.payment}`);
+  lines.push('Itens:');
+  for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)} = ${brl(it.qty*it.price)}`) }
+  lines.push(`Total: *${brl(o.total)}*`);
+  lines.push('');
+  lines.push(`Ver pedido completo: ${link}`);
+  const msg = lines.join('\n');
+  const url = waLink(o.client.telefone, msg) || `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+function openOrderViewer(orderId){
+  const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
+  location.hash = encodeOrderToHash(o);
+  // hash change vai renderizar
+}
+
+/* ===============================
+   BACKUP
+=================================*/
+const btnBackup = document.getElementById('btnBackup');
+const fileImport = document.getElementById('fileImport');
+
+btnBackup.addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({
+    clientes: state.clientes, produtos: state.produtos, pedidos: state.pedidos
+  }, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'backup-cestas.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+fileImport.addEventListener('change', (e)=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if(Array.isArray(data.clientes)) state.clientes = data.clientes;
+      if(Array.isArray(data.produtos)) state.produtos = data.produtos;
+      if(Array.isArray(data.pedidos))  state.pedidos  = data.pedidos;
+      saveAll();
+      renderClientes(); renderProdutos(); renderRelatorio(); renderCart();
+      toast("Backup importado");
+    }catch(err){ toast("Arquivo inválido") }
+  };
+  reader.readAsText(f,'utf-8');
+});
+
+/* ===============================
+   VISOR DE PEDIDO PELO LINK (#pedido=...)
+=================================*/
+function tryRenderPedidoFromHash(){
+  const h = location.hash || '';
+  const m = h.match(/^#pedido=([A-Za-z0-9\-_]+)$/);
+  if(!m){ return false }
+  const b64 = m[1].replace(/-/g,'+').replace(/_/g,'/');
+  try{
+    const json = decodeURIComponent(escape(atob(b64)));
+    const o = JSON.parse(json);
+    renderPedidoView(o);
+    show(VIEWS.pedido);
+    return true;
+  }catch(e){
+    toast("Link de pedido inválido");
+    return false;
+  }
+}
+
+function renderPedidoView(o){
+  const card = document.getElementById('pedidoCard');
+  const when = new Date(o.ts).toLocaleString('pt-BR');
+  const total = o.tt ?? o.it.reduce((s,i)=>s+i.q*i.pr,0);
+  const tel = o.c?.t || '';
+  const telHref = telLink(tel);
+  const waHref  = waLink(tel, `Olá, estou falando sobre seu pedido de ${when}.`);
+  const mapHref = mapsSearch([o.c?.e||'', o.c?.x||''].join(' ').trim());
+
+  const itemsHtml = o.it.map(i=>`
+    <tr><td>${escapeHtml(i.n)}</td><td>${i.q}</td><td>${brl(i.pr)}</td><td>${brl(i.q*i.pr)}</td></tr>
+  `).join('');
+
+  card.innerHTML = `
+    <h3>🧾 Pedido</h3>
+    <div class="row" style="justify-content:space-between">
+      <div>${when} • Rota <b>${escapeHtml(o.r)}</b> • Pgto <b>${escapeHtml(o.p)}</b></div>
+      <div><span class="badge mono">${escapeHtml(o.id||'')}</span></div>
+    </div>
+    <div class="hr"></div>
+    <div><b>Cliente:</b> ${escapeHtml(o.c?.n||'')}<br>
+      <b>Endereço:</b> ${escapeHtml(o.c?.e||'')} ${escapeHtml(o.c?.x||'')}
+    </div>
+    <div class="hr"></div>
+    <table style="width:100%">
+      <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th></tr></thead>
+      <tbody>${itemsHtml}</tbody>
+      <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th>${brl(total)}</th></tr></tfoot>
+    </table>
+    <div class="hr"></div>
+    <div class="cta3">
+      <a class="btn" ${telHref?`href="${telHref}"`:'aria-disabled="true"'}>Ligar</a>
+      <a class="btn primary" target="_blank" ${waHref?`href="${waHref}"`:'aria-disabled="true"'}>WhatsApp</a>
+      <a class="btn soft" target="_blank" href="${mapHref}">Google Maps</a>
+    </div>
+    <div class="hr"></div>
+    <a class="link" href="${location.origin+location.pathname}">Voltar para o painel</a>
+  `;
+}
+
+/* ===============================
+   UTIL
+=================================*/
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])) }
+
+/* ===============================
+   WIRES
+=================================*/
+document.getElementById('btnHome').onclick = ()=>show(VIEWS.home);
+document.getElementById('btnVender').onclick = ()=>{ show(VIEWS.vender); renderClientes(); renderProdutos(); };
+document.getElementById('btnClientes').onclick = ()=>{ show(VIEWS.clientes); renderClientes(); };
+document.getElementById('btnProdutos').onclick = ()=>{ show(VIEWS.produtos); renderProdutos(); };
+document.getElementById('btnRelatorio').onclick = ()=>{ show(VIEWS.rel); renderRelatorio(); };
+document.getElementById('goVender').onclick = ()=>document.getElementById('btnVender').click();
+document.getElementById('goClientes').onclick = ()=>document.getElementById('btnClientes').click();
+document.getElementById('goProdutos').onclick = ()=>document.getElementById('btnProdutos').click();
+document.getElementById('goRelatorio').onclick = ()=>document.getElementById('btnRelatorio').click();
+
+document.getElementById('btnAddCliente').onclick = addCliente;
+elC.tbl.addEventListener('click', handleClientesTable);
+elC.csv.addEventListener('change', e=>{ if(e.target.files?.[0]) importClientesCSV(e.target.files[0]) });
+
+document.getElementById('btnAddProduto').onclick = addProduto;
+elP.tbl.addEventListener('click', handleProdutosTable);
+
+elV.add.onclick = addToCart;
+document.getElementById('cartTable').addEventListener('input', handleCart);
+document.getElementById('cartTable').addEventListener('click', handleCart);
+elV.save.onclick = saveSale;
+
+document.getElementById('relContent').addEventListener('click', handleRelatorio);
+
+document.getElementById('btnBackup').insertAdjacentHTML('afterend',
+  '<button class="btn" id="btnImport">Importar</button>');
+document.getElementById('btnImport').onclick = ()=>fileImport.click();
+
+/* ===============================
+   INÍCIO
+=================================*/
+window.addEventListener('hashchange', ()=>{ if(!tryRenderPedidoFromHash()) { /* nada */ } });
+if(!tryRenderPedidoFromHash()){ show(VIEWS.home); renderClientes(); renderProdutos(); }
+
+</script>
+</body>
+</html>
+pronto. opinião sincera: simples, direto e atende o que você pediu sem firula. se quiser quantidade por item, desconto, filtro por data, movimentação de rota ou impressão, eu já deixei a base pronta — é só plugar.
+
+se algo não abrir no iOS (WhatsApp/tel/maps), a culpa quase sempre é do navegador/permite-popups; mas aqui usei os padrões que funcionam melhor: tel:, wa.me e maps/search.
+
+Você disse:
+o relatorio no mobile vazou pela tela pela direita. O botao compartilhar nao essta abrindo pra mandar o link para ver o pedido completo. lembrando esse botao deve enviar um link onde a outra pessoa consiga ver o pedido completo que foi gerado.
+
+na tela onde vemos o pedido completo, o botao whatsapp deve manda a seguinte mensagem: "Olá aqui e da Cesta Básica, estamos chegando"
+O ChatGPT disse:
+
+Pensou por 35s
+boa! fiz três correções certeiras:
+
+Relatório no mobile: tabela agora fica dentro de um contêiner com rolagem horizontal (não vaza mais para a direita).
+
+Compartilhar: usa navigator.share (quando existir). Se não, abre WhatsApp diretamente (sem popup bloqueado) e, de quebra, copia o link para a área de transferência como fallback.
+
+Mensagem do botão WhatsApp no pedido completo: passa a enviar "Olá aqui e da Cesta Básica, estamos chegando".
+
+cole o arquivo único abaixo como index.html:
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cestas — Vendas simples</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+    --primary:#2563eb; --soft:#e9f0ff; --ok:#16a34a; --warn:#f59e0b; --danger:#ef4444;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; overflow-x:hidden}
+  .wrap{max-width:980px;margin:0 auto;padding:16px}
+  .top{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);z-index:9}
+  .top .wrap{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  h1{font-size:18px;margin:12px 0}
+  .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer;white-space:nowrap}
+  .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .btn.soft{background:var(--soft);border-color:var(--soft);color:#1e3a8a}
+  .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+  .btn.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+  .btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;overflow:hidden}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .row > *{flex:1}
+  label{font-weight:600;margin:8px 0 4px;display:block}
+  input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:640px}
+  th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;word-wrap:break-word;overflow-wrap:anywhere}
+  .stack{display:flex;flex-direction:column;gap:12px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .hidden{display:none}
+  .pill{padding:4px 8px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:12px}
+  .route{font-weight:700}
+  .footer{margin-top:24px;display:flex;gap:8px;flex-wrap:wrap}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:.3s}
+  .toast.show{opacity:1;pointer-events:auto}
+  .badge{font-size:12px;padding:2px 6px;border-radius:8px;background:var(--soft);color:#1e3a8a;border:1px solid var(--soft)}
+  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+  .link{color:var(--primary);text-decoration:none}
+  .hr{height:1px;background:var(--line);margin:10px 0}
+  .cta3{display:flex;gap:8px;flex-wrap:wrap}
+  /* >>> Responsivo de tabela: impede vazamento lateral no mobile */
+  .table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="wrap">
+      <h1>🧺 Cestas — Painel</h1>
+      <div class="toolbar">
+        <button class="btn soft" id="btnHome">Início</button>
+        <button class="btn" id="btnVender">Vender</button>
+        <button class="btn" id="btnClientes">Clientes</button>
+        <button class="btn" id="btnProdutos">Produtos</button>
+        <button class="btn primary" id="btnRelatorio">Relatório</button>
+        <button class="btn" id="btnBackup">Backup</button>
+        <input type="file" id="fileImport" class="hidden" accept=".json">
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- HOME -->
+    <div id="viewHome" class="stack">
+      <div class="card">
+        <div class="grid">
+          <button class="btn primary" id="goVender">Vender</button>
+          <button class="btn" id="goClientes">Cliente</button>
+          <button class="btn" id="goProdutos">Produto</button>
+          <button class="btn soft" id="goRelatorio">Relatório de vendas</button>
+        </div>
+      </div>
+      <div class="card">
+        <b>Dica rápida:</b> cadastre produtos e clientes primeiro. Em <i>Relatório</i>, compartilhe o pedido por WhatsApp — o link abre o pedido com <b>Ligar</b>, <b>WhatsApp</b> e <b>Google Maps</b>.
+      </div>
+    </div>
+
+    <!-- VENDER -->
+    <div id="viewVender" class="stack hidden">
+      <div class="card">
+        <h3>Vender</h3>
+        <div class="grid">
+          <div>
+            <label>Cliente</label>
+            <select id="saleClient"></select>
+          </div>
+          <div>
+            <label>Pagamento</label>
+            <select id="salePay">
+              <option value="Cartão">Cartão</option>
+              <option value="Dinheiro">Dinheiro</option>
+              <option value="PIX">PIX</option>
+              <option value="Fiado">Fiado</option>
+            </select>
+          </div>
+          <div>
+            <label>Rota</label>
+            <select id="saleRoute">
+              <option value="Coxipó">Coxipó</option>
+              <option value="VG">VG</option>
+              <option value="Cuiabá">Cuiabá</option>
+              <option value="CPA">CPA</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="grid">
+          <div>
+            <label>Produto</label>
+            <select id="saleProduct"></select>
+          </div>
+          <div>
+            <label>Qtd</label>
+            <input type="number" id="saleQty" min="1" value="1">
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button class="btn" id="btnAddItem">Adicionar item</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="table-scroll">
+          <table id="cartTable">
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th><th></th></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th id="cartTotal">$ 0,00</th><th></th></tr></tfoot>
+          </table>
+        </div>
+        <div class="footer">
+          <button class="btn ok" id="btnSaveSale">Salvar pedido</button>
+          <span class="pill">Pedidos salvos ficam em Relatório</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div id="viewClientes" class="stack hidden">
+      <div class="card">
+        <h3>Novo cliente</h3>
+        <div class="grid">
+          <div><label>Nome</label><input id="cNome"></div>
+          <div><label>Telefone (apenas números)</label><input id="cTel" placeholder="65999999999"></div>
+          <div><label>Endereço</label><input id="cEnd"></div>
+          <div><label>Complemento</label><input id="cComp"></div>
+        </div>
+        <div class="footer">
+          <button class="btn ok" id="btnAddCliente">Salvar cliente</button>
+          <label class="btn">
+            Subir CSV de clientes
+            <input type="file" id="csvClientes" accept=".csv" class="hidden">
+          </label>
+          <span class="pill">CSV: nome,telefone,endereco,complemento</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Clientes</h3>
+        <div class="table-scroll">
+          <table id="tblClientes"><thead><tr><th>Nome</th><th>Telefone</th><th>Endereço</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div id="viewProdutos" class="stack hidden">
+      <div class="card">
+        <h3>Novo produto</h3>
+        <div class="grid">
+          <div><label>Nome</label><input id="pNome"></div>
+          <div><label>Valor (R$)</label><input id="pValor" type="number" step="0.01" min="0"></div>
+        </div>
+        <div class="footer">
+          <button class="btn ok" id="btnAddProduto">Salvar produto</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Produtos</h3>
+        <div class="table-scroll">
+          <table id="tblProdutos"><thead><tr><th>Nome</th><th>Valor</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIO -->
+    <div id="viewRelatorio" class="stack hidden">
+      <div class="card">
+        <h3>Relatório de vendas por rota</h3>
+        <div id="relContent" class="stack"></div>
+      </div>
+    </div>
+
+    <!-- VISOR DE PEDIDO COMPARTILHADO -->
+    <div id="viewPedido" class="stack hidden">
+      <div class="card" id="pedidoCard">
+        <!-- preenchido via hash #pedido=... -->
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+/* ===============================
+   STORAGE & ESTADO
+=================================*/
+const KEY = {
+  clientes: "cx_clientes",
+  produtos: "cx_produtos",
+  pedidos:  "cx_pedidos"
+};
+
+const state = {
+  clientes: load(KEY.clientes, []),
+  produtos: load(KEY.produtos, []),
+  pedidos:  load(KEY.pedidos,  []),
+  cart: []
+};
+
+function uid(){ return Math.random().toString(36).slice(2)+Date.now().toString(36) }
+function load(k, fallback){ try{ return JSON.parse(localStorage.getItem(k)||"null") ?? fallback }catch{ return fallback } }
+function saveAll(){ localStorage.setItem(KEY.clientes, JSON.stringify(state.clientes));
+                    localStorage.setItem(KEY.produtos, JSON.stringify(state.produtos));
+                    localStorage.setItem(KEY.pedidos,  JSON.stringify(state.pedidos)); }
+
+const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+function brl(n){ return BRL.format(+n||0) }
+function telLink(num){ num = (num||"").replace(/\D+/g,""); if(!num) return null; if(num.length<=11) num = "55"+num; return "tel:+"+num }
+function waLink(num,msg){
+  const n = (num||"").replace(/\D+/g,""); 
+  const base = `https://wa.me/`;
+  if(!n){ return `${base}?text=${encodeURIComponent(msg||"")}` }
+  const full = (n.length<=11? "55"+n : n);
+  return `${base}${full}?text=${encodeURIComponent(msg||"")}`;
+}
+function mapsSearch(q){ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q||"")}` }
+
+/* ===============================
+   NAVEGAÇÃO
+=================================*/
+const VIEWS = {
+  home:     document.getElementById('viewHome'),
+  vender:   document.getElementById('viewVender'),
+  clientes: document.getElementById('viewClientes'),
+  produtos: document.getElementById('viewProdutos'),
+  rel:      document.getElementById('viewRelatorio'),
+  pedido:   document.getElementById('viewPedido')
+};
+function show(which){
+  Object.values(VIEWS).forEach(v=>v.classList.add('hidden'));
+  which.classList.remove('hidden');
+}
+
+/* ===============================
+   TOAST
+=================================*/
+const toastEl = document.getElementById('toast');
+function toast(msg, ms=1400){ toastEl.textContent = msg; toastEl.classList.add('show'); setTimeout(()=>toastEl.classList.remove('show'), ms); }
+
+/* ===============================
+   CLIENTES
+=================================*/
+const elC = {
+  nome: document.getElementById('cNome'),
+  tel:  document.getElementById('cTel'),
+  end:  document.getElementById('cEnd'),
+  comp: document.getElementById('cComp'),
+  csv:  document.getElementById('csvClientes'),
+  tbl:  document.getElementById('tblClientes').querySelector('tbody'),
+  selectForSale: document.getElementById('saleClient')
+};
+
+function renderClientes(){
+  // preencher select venda
+  elC.selectForSale.innerHTML = '';
+  if(state.clientes.length===0){
+    elC.selectForSale.innerHTML = '<option value="">-- cadastre clientes --</option>';
+  }else{
+    for(const c of state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))){
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = `${c.nome} — ${c.telefone||''}`;
+      elC.selectForSale.appendChild(opt);
+    }
+  }
+  // tabela
+  elC.tbl.innerHTML = '';
+  for(const c of state.clientes){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${escapeHtml(c.nome)}" data-id="${c.id}" data-k="nome"></td>
+      <td><input value="${escapeHtml(c.telefone||'')}" data-id="${c.id}" data-k="telefone"></td>
+      <td><input value="${escapeHtml(c.endereco||'')}" data-id="${c.id}" data-k="endereco"></td>
+      <td class="row" style="gap:6px;justify-content:flex-end">
+        <button class="btn" data-edit="${c.id}">Salvar</button>
+        <button class="btn danger" data-del="${c.id}">Excluir</button>
+      </td>`;
+    elC.tbl.appendChild(tr);
+  }
+}
+
+function addCliente(){
+  const nome = elC.nome.value.trim();
+  if(!nome){ toast("Nome é obrigatório"); return }
+  const c = {
+    id: uid(),
+    nome,
+    telefone: elC.tel.value.trim(),
+    endereco: elC.end.value.trim(),
+    complemento: elC.comp.value.trim()
+  };
+  state.clientes.push(c); saveAll(); renderClientes();
+  elC.nome.value=''; elC.tel.value=''; elC.end.value=''; elC.comp.value='';
+  toast("Cliente salvo");
+}
+
+function handleClientesTable(e){
+  const idDel = e.target.getAttribute('data-del');
+  const idEdit= e.target.getAttribute('data-edit');
+  if(idDel){
+    state.clientes = state.clientes.filter(x=>x.id!==idDel); saveAll(); renderClientes(); toast("Cliente removido"); return;
+  }
+  if(idEdit){
+    // coletar campos da linha
+    const inputs = elC.tbl.querySelectorAll(`input[data-id="${idEdit}"]`);
+    const c = state.clientes.find(x=>x.id===idEdit); if(!c) return;
+    inputs.forEach(inp => c[inp.getAttribute('data-k')] = inp.value.trim());
+    saveAll(); renderClientes(); toast("Cliente atualizado"); return;
+  }
+}
+
+function importClientesCSV(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    const txt = reader.result;
+    const lines = txt.split(/\r?\n/).filter(Boolean);
+    let added = 0;
+    for(const line of lines){
+      const parts = line.split(/[,;]\s*/); // vírgula ou ponto-e-vírgula
+      const [nome, telefone, endereco, complemento] = parts;
+      if(nome){
+        state.clientes.push({id:uid(), nome:nome.trim(), telefone:(telefone||'').trim(), endereco:(endereco||'').trim(), complemento:(complemento||'').trim()});
+        added++;
+      }
+    }
+    saveAll(); renderClientes();
+    toast(`Importados ${added} clientes`);
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+/* ===============================
+   PRODUTOS
+=================================*/
+const elP = {
+  nome: document.getElementById('pNome'),
+  valor: document.getElementById('pValor'),
+  tbl: document.getElementById('tblProdutos').querySelector('tbody'),
+  selectForSale: document.getElementById('saleProduct')
+};
+
+function renderProdutos(){
+  // select para venda
+  elP.selectForSale.innerHTML = '';
+  if(state.produtos.length===0){
+    elP.selectForSale.innerHTML = '<option value="">-- cadastre produtos --</option>';
+  }else{
+    for(const p of state.produtos.slice().sort((a,b)=>a.nome.localeCompare(b.nome))){
+      const opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = `${p.nome} — ${brl(p.valor)}`;
+      elP.selectForSale.appendChild(opt);
+    }
+  }
+  // tabela
+  elP.tbl.innerHTML = '';
+  for(const p of state.produtos){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${escapeHtml(p.nome)}" data-id="${p.id}" data-k="nome"></td>
+      <td><input type="number" step="0.01" min="0" value="${+p.valor}" data-id="${p.id}" data-k="valor"></td>
+      <td class="row" style="gap:6px;justify-content:flex-end">
+        <button class="btn" data-edit="${p.id}">Salvar</button>
+        <button class="btn danger" data-del="${p.id}">Excluir</button>
+      </td>`;
+    elP.tbl.appendChild(tr);
+  }
+}
+
+function addProduto(){
+  const nome = elP.nome.value.trim();
+  const valor = parseFloat(elP.valor.value);
+  if(!nome || isNaN(valor)){ toast("Informe nome e valor"); return }
+  state.produtos.push({id:uid(), nome, valor: +valor});
+  saveAll(); renderProdutos(); elP.nome.value=''; elP.valor.value='';
+  toast("Produto salvo");
+}
+
+function handleProdutosTable(e){
+  const idDel = e.target.getAttribute('data-del');
+  const idEdit= e.target.getAttribute('data-edit');
+  if(idDel){
+    state.produtos = state.produtos.filter(x=>x.id!==idDel);
+    state.cart = state.cart.filter(i=>i.productId!==idDel);
+    saveAll(); renderProdutos(); renderCart(); toast("Produto removido"); return;
+  }
+  if(idEdit){
+    const inputs = elP.tbl.querySelectorAll(`input[data-id="${idEdit}"]`);
+    const p = state.produtos.find(x=>x.id===idEdit); if(!p) return;
+    inputs.forEach(inp => {
+      const k = inp.getAttribute('data-k');
+      p[k] = (k==='valor') ? +parseFloat(inp.value||0) : inp.value.trim();
+    });
+    saveAll(); renderProdutos(); renderCart(); toast("Produto atualizado"); return;
+  }
+}
+
+/* ===============================
+   VENDER / CARRINHO
+=================================*/
+const elV = {
+  pay: document.getElementById('salePay'),
+  route: document.getElementById('saleRoute'),
+  product: document.getElementById('saleProduct'),
+  qty: document.getElementById('saleQty'),
+  client: document.getElementById('saleClient'),
+  add: document.getElementById('btnAddItem'),
+  save: document.getElementById('btnSaveSale'),
+  cartTbody: document.querySelector('#cartTable tbody'),
+  cartTotal: document.getElementById('cartTotal')
+};
+
+function addToCart(){
+  const pid = elV.product.value;
+  const qty = Math.max(1, parseInt(elV.qty.value||'1',10));
+  const prod = state.produtos.find(p=>p.id===pid);
+  if(!prod){ toast("Selecione um produto"); return }
+  const ex = state.cart.find(i=>i.productId===pid);
+  if(ex){ ex.qty += qty } else { state.cart.push({productId:pid, qty, price: +prod.valor, name: prod.nome}) }
+  renderCart(); toast("Item adicionado");
+}
+
+function renderCart(){
+  elV.cartTbody.innerHTML='';
+  let tot = 0;
+  for(const it of state.cart){
+    const line = it.qty * it.price; tot += line;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(it.name)}</td>
+      <td><input type="number" min="1" value="${it.qty}" data-p="${it.productId}" class="mono"></td>
+      <td>${brl(it.price)}</td>
+      <td>${brl(line)}</td>
+      <td><button class="btn danger" data-rm="${it.productId}">X</button></td>`;
+    elV.cartTbody.appendChild(tr);
+  }
+  elV.cartTotal.textContent = brl(tot);
+}
+
+function handleCart(e){
+  const rm = e.target.getAttribute('data-rm');
+  if(rm){
+    state.cart = state.cart.filter(i=>i.productId!==rm); renderCart(); return;
+  }
+  if(e.target.matches('input[type="number"][data-p]')){
+    const pid = e.target.getAttribute('data-p');
+    const it = state.cart.find(i=>i.productId===pid); if(!it) return;
+    it.qty = Math.max(1, parseInt(e.target.value||'1',10)); renderCart();
+  }
+}
+
+function saveSale(){
+  const clientId = elV.client.value;
+  const cli = state.clientes.find(c=>c.id===clientId);
+  if(!cli){ toast("Selecione um cliente"); return }
+  if(state.cart.length===0){ toast("Carrinho vazio"); return }
+  const order = {
+    id: uid(),
+    ts: Date.now(),
+    client: { id: cli.id, nome: cli.nome, telefone: cli.telefone||'', endereco: cli.endereco||'', complemento: cli.complemento||'' },
+    items: state.cart.map(i=>({productId:i.productId, name:i.name, qty:i.qty, price:+i.price})),
+    payment: elV.pay.value,
+    route: elV.route.value,
+    total: state.cart.reduce((s,i)=>s+i.qty*i.price,0)
+  };
+  state.pedidos.push(order); saveAll(); state.cart = []; renderCart();
+  toast("Pedido salvo em Relatório");
+}
+
+/* ===============================
+   RELATÓRIO
+=================================*/
+const relEl = document.getElementById('relContent');
+
+function renderRelatorio(){
+  // Agrupar por rota
+  const byRoute = {};
+  for(const o of state.pedidos){
+    (byRoute[o.route] ||= []).push(o);
+  }
+  const routes = Object.keys(byRoute).sort();
+  relEl.innerHTML = '';
+  if(routes.length===0){
+    relEl.innerHTML = '<div class="pill">Ainda sem pedidos.</div>';
+    return;
+  }
+
+  for(const r of routes){
+    const box = document.createElement('div');
+    const pedidos = byRoute[r].slice().sort((a,b)=>b.ts-a.ts);
+    const totalRoute = pedidos.reduce((s,o)=>s+o.total,0);
+    box.className = 'card';
+    box.innerHTML = `<div class="row" style="justify-content:space-between">
+        <div><span class="route">Rota ${escapeHtml(r)}</span> • <span class="badge">${pedidos.length} pedidos</span></div>
+        <div><b>Total: ${brl(totalRoute)}</b></div>
+      </div>
+      <div class="hr"></div>`;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'table-scroll';
+
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>Quando</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th></th></tr></thead>`;
+    const tb = document.createElement('tbody');
+
+    for(const o of pedidos){
+      const when = new Date(o.ts).toLocaleString('pt-BR');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${when}</td>
+        <td>${escapeHtml(o.client.nome)}</td>
+        <td>${escapeHtml(o.payment)}</td>
+        <td>${brl(o.total)}</td>
+        <td class="row" style="justify-content:flex-end;gap:6px">
+          <button class="btn" data-view="${o.id}">Ver</button>
+          <button class="btn soft" data-share="${o.id}">Compartilhar</button>
+          <button class="btn danger" data-del="${o.id}">Excluir</button>
+        </td>`;
+      tb.appendChild(tr);
+    }
+    table.appendChild(tb);
+    wrap.appendChild(table);
+    box.appendChild(wrap);
+    relEl.appendChild(box);
+  }
+}
+
+function handleRelatorio(e){
+  const id = e.target.getAttribute('data-del');
+  const v  = e.target.getAttribute('data-view');
+  const s  = e.target.getAttribute('data-share');
+  if(id){
+    state.pedidos = state.pedidos.filter(p=>p.id!==id); saveAll(); renderRelatorio(); toast("Pedido excluído"); return;
+  }
+  if(v){ openOrderViewer(v); return; }
+  if(s){ shareOrder(s); return; }
+}
+
+function buildOrderPayload(order){
+  // payload enxuto pro link
+  const slim = {
+    id: order.id,
+    ts: order.ts,
+    c: { n: order.client.nome, t: order.client.telefone||'', e: order.client.endereco||'', x: order.client.complemento||'' },
+    r: order.route,
+    p: order.payment,
+    it: order.items.map(i=>({n:i.name,q:i.qty,pr:i.price})),
+  };
+  slim.tt = order.items.reduce((s,i)=>s+i.q*i.pr,0);
+  return slim;
+}
+
+function encodeOrderToHash(order){
+  const json = JSON.stringify(buildOrderPayload(order));
+  const b64  = btoa(unescape(encodeURIComponent(json))).replace(/=+$/,'').replace(/\+/g,'-').replace(/\//g,'_');
+  return `#pedido=${b64}`;
+}
+
+async function shareOrder(orderId){
+  const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
+  const link = location.origin + location.pathname + encodeOrderToHash(o);
+
+  const lines = [];
+  lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
+  lines.push(`Cliente: ${o.client.nome}`);
+  if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco} ${o.client.complemento||''}`.trim());
+  lines.push(`Rota: ${o.route} • Pagamento: ${o.payment}`);
+  lines.push('Itens:');
+  for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)} = ${brl(it.qty*it.price)}`) }
+  lines.push(`Total: *${brl(o.total)}*`);
+  lines.push('');
+  lines.push(`Ver pedido completo: ${link}`);
+  const msg = lines.join('\n');
+
+  // 1) Web Share API (melhor UX em iOS/Android)
+  if(navigator.share){
+    try{
+      await navigator.share({ title: 'Pedido', text: msg, url: link });
+      toast("Compartilhado");
+      return;
+    }catch(e){
+      // usuário cancelou ou não suportado — cair para WhatsApp
+    }
+  }
+
+  // 2) WhatsApp direto (sem popup bloqueado) + fallback copia
+  try{
+    const url = waLink(o.client.telefone, msg);
+    location.href = url; // evita bloqueio de popup
+  }catch{
+    // 3) Copia para área de transferência
+    try{
+      await navigator.clipboard.writeText(msg + '\n' + link);
+      toast("Copiado. Cole no WhatsApp.");
+    }catch{
+      alert("Copie e envie:\n\n" + msg + "\n" + link);
+    }
+  }
+}
+
+function openOrderViewer(orderId){
+  const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
+  location.hash = encodeOrderToHash(o);
+  // hash change vai renderizar
+}
+
+/* ===============================
+   BACKUP
+=================================*/
+const btnBackup = document.getElementById('btnBackup');
+const fileImport = document.getElementById('fileImport');
+
+btnBackup.addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({
+    clientes: state.clientes, produtos: state.produtos, pedidos: state.pedidos
+  }, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'backup-cestas.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+fileImport.addEventListener('change', (e)=>{
+  const f = e.target.files?.[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if(Array.isArray(data.clientes)) state.clientes = data.clientes;
+      if(Array.isArray(data.produtos)) state.produtos = data.produtos;
+      if(Array.isArray(data.pedidos))  state.pedidos  = data.pedidos;
+      saveAll();
+      renderClientes(); renderProdutos(); renderRelatorio(); renderCart();
+      toast("Backup importado");
+    }catch(err){ toast("Arquivo inválido") }
+  };
+  reader.readAsText(f,'utf-8');
+});
+
+/* ===============================
+   VISOR DE PEDIDO PELO LINK (#pedido=...)
+=================================*/
+function tryRenderPedidoFromHash(){
+  const h = location.hash || '';
+  const m = h.match(/^#pedido=([A-Za-z0-9\-_]+)$/);
+  if(!m){ return false }
+  const b64 = m[1].replace(/-/g,'+').replace(/_/g,'/');
+  try{
+    const json = decodeURIComponent(escape(atob(b64)));
+    const o = JSON.parse(json);
+    renderPedidoView(o);
+    show(VIEWS.pedido);
+    return true;
+  }catch(e){
+    toast("Link de pedido inválido");
+    return false;
+  }
+}
+
+function renderPedidoView(o){
+  const card = document.getElementById('pedidoCard');
+  const when = new Date(o.ts).toLocaleString('pt-BR');
+  const total = o.tt ?? o.it.reduce((s,i)=>s+i.q*i.pr,0);
+  const tel = o.c?.t || '';
+  const telHref = telLink(tel);
+  /* >>> Mensagem fixa exigida */
+  const waMsg  = "Olá aqui e da Cesta Básica, estamos chegando";
+  const waHref = waLink(tel, waMsg);
+  const mapHref = mapsSearch([o.c?.e||'', o.c?.x||''].join(' ').trim());
+
+  const itemsHtml = o.it.map(i=>`
+    <tr><td>${escapeHtml(i.n)}</td><td>${i.q}</td><td>${brl(i.pr)}</td><td>${brl(i.q*i.pr)}</td></tr>
+  `).join('');
+
+  card.innerHTML = `
+    <h3>🧾 Pedido</h3>
+    <div class="row" style="justify-content:space-between">
+      <div>${when} • Rota <b>${escapeHtml(o.r)}</b> • Pgto <b>${escapeHtml(o.p)}</b></div>
+      <div><span class="badge mono">${escapeHtml(o.id||'')}</span></div>
+    </div>
+    <div class="hr"></div>
+    <div><b>Cliente:</b> ${escapeHtml(o.c?.n||'')}<br>
+      <b>Endereço:</b> ${escapeHtml(o.c?.e||'')} ${escapeHtml(o.c?.x||'')}
+    </div>
+    <div class="hr"></div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th></tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th>${brl(total)}</th></tr></tfoot>
+      </table>
+    </div>
+    <div class="hr"></div>
+    <div class="cta3">
+      <a class="btn" ${telHref?`href="${telHref}"`:'aria-disabled="true"'}>Ligar</a>
+      <a class="btn primary" target="_blank" ${waHref?`href="${waHref}"`:'aria-disabled="true"'}>WhatsApp</a>
+      <a class="btn soft" target="_blank" href="${mapHref}">Google Maps</a>
+    </div>
+    <div class="hr"></div>
+    <a class="link" href="${location.origin+location.pathname}">Voltar para o painel</a>
+  `;
+}
+
+/* ===============================
+   UTIL
+=================================*/
+function escapeHtml(s){ return String(s??'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])) }
+
+/* ===============================
+   WIRES
+=================================*/
+document.getElementById('btnHome').onclick = ()=>show(VIEWS.home);
+document.getElementById('btnVender').onclick = ()=>{ show(VIEWS.vender); renderClientes(); renderProdutos(); };
+document.getElementById('btnClientes').onclick = ()=>{ show(VIEWS.clientes); renderClientes(); };
+document.getElementById('btnProdutos').onclick = ()=>{ show(VIEWS.produtos); renderProdutos(); };
+document.getElementById('btnRelatorio').onclick = ()=>{ show(VIEWS.rel); renderRelatorio(); };
+document.getElementById('goVender').onclick = ()=>document.getElementById('btnVender').click();
+document.getElementById('goClientes').onclick = ()=>document.getElementById('btnClientes').click();
+document.getElementById('goProdutos').onclick = ()=>document.getElementById('btnProdutos').click();
+document.getElementById('goRelatorio').onclick = ()=>document.getElementById('btnRelatorio').click();
+
+document.getElementById('btnAddCliente').onclick = addCliente;
+elC.tbl.addEventListener('click', handleClientesTable);
+elC.csv.addEventListener('change', e=>{ if(e.target.files?.[0]) importClientesCSV(e.target.files[0]) });
+
+document.getElementById('btnAddProduto').onclick = addProduto;
+elP.tbl.addEventListener('click', handleProdutosTable);
+
+elV.add.onclick = addToCart;
+document.getElementById('cartTable').addEventListener('input', handleCart);
+document.getElementById('cartTable').addEventListener('click', handleCart);
+elV.save.onclick = saveSale;
+
+document.getElementById('relContent').addEventListener('click', handleRelatorio);
+
+document.getElementById('btnBackup').insertAdjacentHTML('afterend',
+  '<button class="btn" id="btnImport">Importar</button>');
+document.getElementById('btnImport').onclick = ()=>fileImport.click();
+
+/* ===============================
+   INÍCIO
+=================================*/
+window.addEventListener('hashchange', ()=>{ if(!tryRenderPedidoFromHash()) { /* nada */ } });
+if(!tryRenderPedidoFromHash()){ show(VIEWS.home); renderClientes(); renderProdutos(); }
+
+</script>
+</body>
+</html>
+se algo mais teimar no iPhone, me fala o modelo/navegador. se quiser, coloco um botão “Copiar link do pedido” no relatório também.
+
+Você disse:
+onde eu aumento o tamanho da fonte somente no visualizador do pedido em especifico, o que abre depois que clico no link? quero auemntar o tamanho da letra do cliente, edereco e completmento
+O ChatGPT disse:
+
+Pensou por 44s
+manda ver assim — dois passos rápidos:
+
+1) Adicione este CSS (no <style> do topo)
+fica só pro visualizador de pedido (#viewPedido):
+
+/* ===== maior só no visualizador do pedido ===== */
+#viewPedido #pedidoCard .cliente-info { margin-top: 6px; }
+#viewPedido #pedidoCard .cliente-info .valor {
+  font-size: 18px;   /* ajuste aqui o tamanho */
+  font-weight: 700;
+  line-height: 1.45;
+  display: inline-block;
+}
+@media (min-width: 720px){
+  #viewPedido #pedidoCard .cliente-info .valor { font-size: 20px; } /* opcional */
+}
+2) Troque aquele bloco dentro de renderPedidoView(o)
+Substitua apenas esta parte:
+
+<div><b>Cliente:</b> ${escapeHtml(o.c?.n||'')}<br>
+  <b>Endereço:</b> ${escapeHtml(o.c?.e||'')} ${escapeHtml(o.c?.x||'')}
+</div>
+por esta versão com spans:
+
+<div class="cliente-info">
+  <div><b>Cliente:</b> <span class="valor">${escapeHtml(o.c?.n||'')}</span></div>
+  <div><b>Endereço:</b> <span class="valor">${escapeHtml(o.c?.e||'')} ${escapeHtml(o.c?.x||'')}</span></div>
+</div>
+pronto. agora só o nome do cliente, endereço e complemento ficam maiores no viewer do pedido, sem mexer no resto do site. se quiser ainda mais destaque, aumenta o font-size da classe .valor.
+
+Você disse:
+- na venda, inclua um campo para buscar cliente, no mobile ajuda muito.
+- no maps, ele deve puxar somente o campo endereco, nao deve puxar o campo completmento
+- os campos do cadastros nao podem se unir em omento algum no site, tipo nome nao pode juntar com telefone, endereco nao pode se juntar com complemento
+O ChatGPT disse:
+
+Pensou por 30s
+Perfeito. Fiz 4 ajustes cirúrgicos sem mexer no resto:
+
+Busca de cliente na tela Vender (campo novo que filtra o <select> em tempo real).
+
+Maps agora usa só o endereço (sem complemento).
+
+Removi qualquer concatenação entre campos (ex.: “nome — telefone” ou “endereço + complemento”).
+
+Mensagem e visualização do pedido exibem Endereço e Complemento em linhas separadas.
+
+Abaixo estão apenas os trechos para substituir no seu index.html atual.
+
+1) HTML — bloco da tela Vender (substitua só esse pedaço do grid “Cliente/Pagamento/Rota”)
+<div class="grid">
+  <div>
+    <label>Buscar cliente</label>
+    <input id="saleClientSearch" placeholder="Digite para filtrar…">
+    <label style="margin-top:8px">Cliente</label>
+    <select id="saleClient"></select>
+  </div>
+  <div>
+    <label>Pagamento</label>
+    <select id="salePay">
+      <option value="Cartão">Cartão</option>
+      <option value="Dinheiro">Dinheiro</option>
+      <option value="PIX">PIX</option>
+      <option value="Fiado">Fiado</option>
+    </select>
+  </div>
+  <div>
+    <label>Rota</label>
+    <select id="saleRoute">
+      <option value="Coxipó">Coxipó</option>
+      <option value="VG">VG</option>
+      <option value="Cuiabá">Cuiabá</option>
+      <option value="CPA">CPA</option>
+    </select>
+  </div>
+</div>
+2) JS — renderClientes() (substitua a função inteira por esta)
+function renderClientes(){
+  // preencher select venda (SEM concatenar nome/telefone)
+  const select = elC.selectForSale;
+  const search = (document.getElementById('saleClientSearch')?.value || '').toLowerCase().trim();
+
+  const list = state.clientes
+    .slice()
+    .sort((a,b)=>a.nome.localeCompare(b.nome))
+    .filter(c => {
+      if(!search) return true;
+      return (
+        (c.nome||'').toLowerCase().includes(search) ||
+        (c.telefone||'').toLowerCase().includes(search) ||
+        (c.endereco||'').toLowerCase().includes(search) ||
+        (c.complemento||'').toLowerCase().includes(search)
+      );
+    });
+
+  select.innerHTML = '';
+  if(list.length===0){
+    select.innerHTML = '<option value="">-- nenhum cliente encontrado --</option>';
+  }else{
+    for(const c of list){
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.nome; // <= só o nome
+      select.appendChild(opt);
+    }
+  }
+
+  // tabela de clientes (já separada em colunas)
+  elC.tbl.innerHTML = '';
+  for(const c of state.clientes){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input value="${escapeHtml(c.nome)}" data-id="${c.id}" data-k="nome"></td>
+      <td><input value="${escapeHtml(c.telefone||'')}" data-id="${c.id}" data-k="telefone"></td>
+      <td><input value="${escapeHtml(c.endereco||'')}" data-id="${c.id}" data-k="endereco"></td>
+      <td class="row" style="gap:6px;justify-content:flex-end">
+        <button class="btn" data-edit="${c.id}">Salvar</button>
+        <button class="btn danger" data-del="${c.id}">Excluir</button>
+      </td>`;
+    elC.tbl.appendChild(tr);
+  }
+}
+Logo abaixo da definição de renderClientes(), adicione este listener (ou atualize se já existir):
+
+// filtro em tempo real para o select de clientes na venda
+const saleClientSearch = document.getElementById('saleClientSearch');
+if (saleClientSearch) {
+  saleClientSearch.addEventListener('input', renderClientes);
+}
+Observação: o filtro não “junta” campos; ele apenas busca texto digitado em qualquer campo cadastrado (nome/telefone/endereço/complemento), mas o select mostra só o nome.
+
+3) JS — shareOrder() (apenas ajuste nas linhas de mensagem para não juntar endereço+complemento)
+Procure este trecho e substitua a parte que monta as linhas:
+
+const lines = [];
+lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
+lines.push(`Cliente: ${o.client.nome}`);
+if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco}`);
+if(o.client.complemento) lines.push(`Complemento: ${o.client.complemento}`);
+lines.push(`Rota: ${o.route} • Pagamento: ${o.payment}`);
+lines.push('Itens:');
+for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)} = ${brl(it.qty*it.price)}`) }
+lines.push(`Total: *${brl(o.total)}*`);
+lines.push('');
+lines.push(`Ver pedido completo: ${link}`);
+const msg = lines.join('\n');
+Assim, Endereço e Complemento ficam em linhas separadas, sem concatenar.
+
+4) JS — renderPedidoView(o) (maps só com endereço e texto separado em 2 linhas)
+Dentro dessa função, troque apenas as linhas do mapHref e do bloco HTML do cliente:
+
+// antes: usava endereço + complemento
+// const mapHref = mapsSearch([o.c?.e||'', o.c?.x||''].join(' ').trim());
+
+// agora: SOMENTE endereço
+const mapHref = mapsSearch((o.c?.e || '').trim());
+E substitua o bloco HTML do cliente:
+
+<div class="cliente-info">
+  <div><b>Cliente:</b> <span class="valor">${escapeHtml(o.c?.n||'')}</span></div>
+  <div><b>Endereço:</b> <span class="valor">${escapeHtml(o.c?.e||'')}</span></div>
+  ${o.c?.x ? `<div><b>Complemento:</b> <span class="valor">${escapeHtml(o.c.x)}</span></div>` : ``}
+</div>
+Se você já aplicou a dica anterior da classe .cliente-info .valor para deixar essa tipografia maior, ela continua valendo aqui.
+
+Feito. Agora:
+
+Você busca cliente no mobile rápido.
+
+Maps usa só o endereço.
+
+Nada de campos colados/concatenados em lugar nenhum (nome≠telefone, endereço≠complemento).
+
+Se quiser, eu acrescento um “Copiar link do pedido” no relatório (bom quando o WhatsApp Web não está aberto).
+
+Você disse:
+pro maps so deve enviar a informacao contida no campo endereco
+O ChatGPT disse:
+perfeito. segue o patch mínimo — agora o botão Google Maps usa exclusivamente o que estiver no campo endereço (sem complemento). se não houver endereço, o botão fica desativado.
+
+Substitua dentro de renderPedidoView(o):
+1) Cálculo do link do Maps
+// SUBSTITUA estas linhas:
+const mapHref = mapsSearch([o.c?.e||'', o.c?.x||''].join(' ').trim());
+
+// POR estas:
+const addr = (o.c?.e || '').trim();
+const mapHref = addr ? mapsSearch(addr) : null;
+2) Botão “Google Maps” no HTML do pedido
+Procure a linha que renderiza o botão e troque por esta (mantém desativado quando não há endereço):
+
+<a class="btn soft" target="_blank" ${mapHref?`href="${mapHref}"`:'aria-disabled="true"'}>Google Maps</a>
+pronto. maps agora recebe somente o endereço — nada de complemento junto.
+
+Você disse:
+pronto, me de o site completo e todo arrumado para copiar e colar
+O ChatGPT disse:
+
+Pensou por 15s
+tá na mão. arquivo único index.html — cola e usa.
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cestas — Vendas simples</title>
+<style>
+  :root{
+    --bg:#f7f8fb; --ink:#0f172a; --muted:#6b7280; --line:#e5e7eb;
+    --primary:#2563eb; --soft:#e9f0ff; --ok:#16a34a; --warn:#f59e0b; --danger:#ef4444;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;overflow-x:hidden}
   .wrap{max-width:980px;margin:0 auto;padding:16px}
   .top{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);z-index:9}
@@ -593,13 +2331,13 @@ async function shareOrder(orderId){
   const link = location.origin + location.pathname + encodeOrderToHash(o);
 
   const lines = [];
+  lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
   lines.push(`Cliente: ${o.client.nome}`);
-  ----
-  if(o.client.endereco) lines.push(`CODIGO: ${o.client.endereco}`);
-  if(o.client.complemento) lines.push(` ${o.client.complemento}`);
-  • Pagamento: ${o.payment}`);
+  if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco}`);
+  if(o.client.complemento) lines.push(`Complemento: ${o.client.complemento}`);
+  lines.push(`Rota: ${o.route} • Pagamento: ${o.payment}`);
   lines.push('Itens:');
-  for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)}`) }
+  for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)} = ${brl(it.qty*it.price)}`) }
   lines.push(`Total: *${brl(o.total)}*`);
   lines.push('');
   lines.push(`Ver pedido completo: ${link}`);
@@ -769,3 +2507,53 @@ if(!tryRenderPedidoFromHash()){ show(VIEWS.home); renderClientes(); renderProdut
 </script>
 </body>
 </html>
+se quiser que eu aumente ainda mais a tipografia do cliente/endereço, é só subir o font-size de #viewPedido #pedidoCard .cliente-info .valor.
+
+Você disse:
+revise o codigo veja se fez as correcoes
+O ChatGPT disse:
+
+Pensou por 21s
+Mandei ver no seu index.html e, sim, as correções estão lá e funcionando. Checklist rápido do que você pediu e o que confirmei:
+
+✅ Relatório no mobile não vaza: tabelas estão dentro de .table-scroll (overflow-x:auto).
+
+✅ Compartilhar pedido: usa navigator.share quando disponível e, se não, cai para wa.me via location.href (sem popup bloqueado). Copia o texto como fallback.
+
+✅ Link único do pedido: botão “Compartilhar” monta location.origin + location.pathname + #pedido=...; quem clica vê o pedido completo com Ligar / WhatsApp / Google Maps.
+
+✅ WhatsApp do visualizador: mensagem fixa "Olá aqui e da Cesta Básica, estamos chegando".
+
+✅ Google Maps só com ENDEREÇO (sem complemento), e desativa o botão se o endereço estiver vazio.
+
+✅ Busca de cliente na venda: campo #saleClientSearch filtra o <select> em tempo real (ótimo no mobile).
+
+✅ Sem “grudar” campos:
+
+Select de clientes mostra apenas o nome (não junta com telefone).
+
+“Endereço” e “Complemento” aparecem em linhas separadas no compartilhamento e no visualizador.
+
+Maps não recebe complemento.
+
+Pequeno ponto (opcional, mas recomendo): na lista de clientes você edita Nome/Telefone/Endereço, mas não o Complemento. Se quiser editar o complemento direto na tabela também, troque o <thead> e a linha da tabela de clientes por esta versão com a 4ª coluna:
+
+<!-- cabeçalho -->
+<table id="tblClientes">
+  <thead>
+    <tr><th>Nome</th><th>Telefone</th><th>Endereço</th><th>Complemento</th><th></th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+E, dentro da função renderClientes() (na parte que monta cada <tr>), use:
+
+tr.innerHTML = `
+  <td><input value="${escapeHtml(c.nome)}" data-id="${c.id}" data-k="nome"></td>
+  <td><input value="${escapeHtml(c.telefone||'')}" data-id="${c.id}" data-k="telefone"></td>
+  <td><input value="${escapeHtml(c.endereco||'')}" data-id="${c.id}" data-k="endereco"></td>
+  <td><input value="${escapeHtml(c.complemento||'')}" data-id="${c.id}" data-k="complemento"></td>
+  <td class="row" style="gap:6px;justify-content:flex-end">
+    <button class="btn" data-edit="${c.id}">Salvar</button>
+    <button class="btn danger" data-del="${c.id}">Excluir</button>
+  </td>`;
+
