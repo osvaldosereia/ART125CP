@@ -8,28 +8,29 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>Sistema de Pedidos</h1>
+    <h1>📦 Sistema de Pedidos</h1>
     <nav class="top-actions">
-      <button id="btnExport" class="ghost">Exportar JSON</button>
+      <button id="btnExportFull" class="ghost">Exportar JSON (completo)</button>
       <label class="ghost file-label">
         Importar JSON
-        <input id="importJson" type="file" accept=".json" hidden>
+        <input id="importJsonFull" type="file" accept=".json,application/json" hidden>
       </label>
     </nav>
   </header>
 
   <main class="wrap">
-    <!-- NAV PRINCIPAL -->
+    <!-- atalhos -->
     <section class="grid">
       <button class="tile" data-view="vender">Vender</button>
       <button class="tile" data-view="clientes">Cadastrar Cliente</button>
       <button class="tile" data-view="produtos">Cadastrar Produto</button>
+      <button class="tile" data-view="entregadores">Entregadores</button>
       <button class="tile" data-view="andre">André</button>
       <button class="tile" data-view="claudio">Cláudio</button>
       <button class="tile" data-view="junior">Júnior</button>
     </section>
 
-    <!-- VENDER -->
+    <!-- vender -->
     <section id="view-vender" class="view">
       <h2>Vender</h2>
 
@@ -62,11 +63,7 @@
         </div>
         <div class="field">
           <label>Entregador</label>
-          <select id="pedidoEntregador">
-            <option>André</option>
-            <option>Cláudio</option>
-            <option>Júnior</option>
-          </select>
+          <select id="pedidoEntregador"></select>
         </div>
         <div class="field">
           <label>Dia da entrega</label>
@@ -80,7 +77,7 @@
       <button id="btnSalvarPedido" class="primary">Salvar pedido</button>
     </section>
 
-    <!-- CLIENTES -->
+    <!-- clientes -->
     <section id="view-clientes" class="view">
       <h2>Cadastrar Cliente</h2>
       <div class="row">
@@ -97,7 +94,7 @@
       <div class="row">
         <label class="ghost file-label">
           Importar CSV de clientes
-          <input id="csvClientes" type="file" accept=".csv" hidden>
+          <input id="csvClientes" type="file" accept=".csv,text/csv" hidden>
         </label>
         <button id="btnExportClientes" class="ghost">Exportar clientes (CSV)</button>
       </div>
@@ -105,12 +102,12 @@
       <div id="listaClientes" class="list"></div>
     </section>
 
-    <!-- PRODUTOS -->
+    <!-- produtos -->
     <section id="view-produtos" class="view">
       <h2>Cadastrar Produto</h2>
       <div class="row">
-        <div class="field"><label>Tamanho</label><input id="prdTam" placeholder="Ex.: Pequena / Média / Grande"></div>
-        <div class="field"><label>Tipo de Arroz</label><input id="prdArroz" placeholder="Ex.: Branco / Parboilizado / Integral"></div>
+        <div class="field"><label>Tamanho</label><input id="prdTam" placeholder="Pequena / Média / Grande"></div>
+        <div class="field"><label>Tipo de Arroz</</label><input id="prdArroz" placeholder="Branco / Parboilizado / Integral"></div>
         <div class="field"><label>Valor (R$)</label><input id="prdValor" type="number" step="0.01" placeholder="0,00"></div>
       </div>
       <button id="btnSalvarProduto" class="primary">Salvar produto</button>
@@ -118,28 +115,80 @@
       <div id="listaProdutos" class="list"></div>
     </section>
 
-    <!-- ENTREGADORES -->
+    <!-- entregadores (cadastro) -->
+    <section id="view-entregadores" class="view">
+      <h2>Entregadores</h2>
+      <div class="row">
+        <div class="field"><label>Nome</label><input id="entNome" placeholder="Ex.: André"></div>
+        <div class="field"><label>WhatsApp (apenas números)</label><input id="entZap" placeholder="DDDNÚMERO"></div>
+      </div>
+      <button id="btnSalvarEntregador" class="primary">Salvar entregador</button>
+
+      <div class="hint">Os botões “André / Cláudio / Júnior” usam o nome cadastrado aqui para encontrar o entregador e mostrar os pedidos dele.</div>
+
+      <div id="listaEntregadores" class="list"></div>
+
+      <hr>
+      <h3>Despachar rotas</h3>
+      <p>Gere o arquivo de pedidos por entregador e envie pelo WhatsApp.</p>
+      <div id="rotasPane" class="rotas"></div>
+    </section>
+
+    <!-- páginas por entregador -->
     <section id="view-andre" class="view">
       <h2>Pedidos — André</h2>
+      <div class="row">
+        <span class="origin">Origem: 
+          <label><input type="radio" name="orig-andre" value="site" checked> Site</label>
+          <label><input type="radio" name="orig-andre" value="arquivo"> Arquivo</label>
+        </span>
+        <label class="ghost file-label small">
+          Importar rota (JSON)
+          <input id="upload-andre" type="file" accept=".json,application/json" hidden>
+        </label>
+        <button class="ghost small" data-send="André">Enviar rota (WhatsApp)</button>
+      </div>
       <div id="cards-andre" class="cards droplist" data-entregador="André"></div>
     </section>
 
     <section id="view-claudio" class="view">
       <h2>Pedidos — Cláudio</h2>
+      <div class="row">
+        <span class="origin">Origem:
+          <label><input type="radio" name="orig-claudio" value="site" checked> Site</label>
+          <label><input type="radio" name="orig-claudio" value="arquivo"> Arquivo</label>
+        </span>
+        <label class="ghost file-label small">
+          Importar rota (JSON)
+          <input id="upload-claudio" type="file" accept=".json,application/json" hidden>
+        </label>
+        <button class="ghost small" data-send="Cláudio">Enviar rota (WhatsApp)</button>
+      </div>
       <div id="cards-claudio" class="cards droplist" data-entregador="Cláudio"></div>
     </section>
 
     <section id="view-junior" class="view">
       <h2>Pedidos — Júnior</h2>
+      <div class="row">
+        <span class="origin">Origem:
+          <label><input type="radio" name="orig-junior" value="site" checked> Site</label>
+          <label><input type="radio" name="orig-junior" value="arquivo"> Arquivo</label>
+        </span>
+        <label class="ghost file-label small">
+          Importar rota (JSON)
+          <input id="upload-junior" type="file" accept=".json,application/json" hidden>
+        </label>
+        <button class="ghost small" data-send="Júnior">Enviar rota (WhatsApp)</button>
+      </div>
       <div id="cards-junior" class="cards droplist" data-entregador="Júnior"></div>
     </section>
   </main>
 
-  <!-- TEMPLATE DE RECIBO PARA IMPRESSÃO 58mm -->
+  <!-- root p/ recibo 58mm -->
   <div id="print-root" aria-hidden="true"></div>
 
   <footer class="bottombar">
-    <small>💼 Sistema de Pedidos — offline-first (localStorage)</small>
+    <small>💼 Sistema de Pedidos — 100% GitHub Pages (offline-first)</small>
   </footer>
 
   <script src="app.js"></script>
