@@ -24,9 +24,7 @@
       <button class="tile" data-view="vender">Vender</button>
       <button class="tile" data-view="clientes">Cadastrar Cliente</button>
       <button class="tile" data-view="produtos">Cadastrar Produto</button>
-      <button class="tile" data-view="andre">André</button>
-      <button class="tile" data-view="claudio">Cláudio</button>
-      <button class="tile" data-view="junior">Júnior</button>
+      <button class="tile" data-view="rota">Abrir Rota</button>
     </section>
 
     <!-- VENDER -->
@@ -61,11 +59,13 @@
           </select>
         </div>
         <div class="field">
-          <label>Entregador</label>
-          <select id="pedidoEntregador">
-            <option>André</option>
-            <option>Cláudio</option>
-            <option>Júnior</option>
+          <label>Rota</label>
+          <select id="pedidoRota">
+            <option value="" selected>Selecione</option>
+            <option>VG</option>
+            <option>COXIPO</option>
+            <option>CUIABA</option>
+            <option>CPA</option>
           </select>
         </div>
         <div class="field">
@@ -78,6 +78,10 @@
       </div>
 
       <button id="btnSalvarPedido" class="primary">Salvar pedido</button>
+
+      <hr>
+      <h3>Pedidos por rota</h3>
+      <div id="rotasResumo" class="cards-group"></div>
     </section>
 
     <!-- CLIENTES -->
@@ -99,49 +103,4 @@
           Importar CSV de clientes
           <input id="csvClientes" type="file" accept=".csv" hidden>
         </label>
-        <button id="btnExportClientes" class="ghost">Exportar clientes (CSV)</button>
-      </div>
-
-      <div id="listaClientes" class="list"></div>
-    </section>
-
-    <!-- PRODUTOS -->
-    <section id="view-produtos" class="view">
-      <h2>Cadastrar Produto</h2>
-      <div class="row">
-        <div class="field"><label>Tamanho</label><input id="prdTam" placeholder="Ex.: Pequena / Média / Grande"></div>
-        <div class="field"><label>Tipo de Arroz</label><input id="prdArroz" placeholder="Ex.: Branco / Parboilizado / Integral"></div>
-        <div class="field"><label>Valor (R$)</label><input id="prdValor" type="number" step="0.01" placeholder="0,00"></div>
-      </div>
-      <button id="btnSalvarProduto" class="primary">Salvar produto</button>
-
-      <div id="listaProdutos" class="list"></div>
-    </section>
-
-    <!-- ENTREGADORES -->
-    <section id="view-andre" class="view">
-      <h2>Pedidos — André</h2>
-      <div id="cards-andre" class="cards droplist" data-entregador="André"></div>
-    </section>
-
-    <section id="view-claudio" class="view">
-      <h2>Pedidos — Cláudio</h2>
-      <div id="cards-claudio" class="cards droplist" data-entregador="Cláudio"></div>
-    </section>
-
-    <section id="view-junior" class="view">
-      <h2>Pedidos — Júnior</h2>
-      <div id="cards-junior" class="cards droplist" data-entregador="Júnior"></div>
-    </section>
-  </main>
-
-  <!-- TEMPLATE DE RECIBO PARA IMPRESSÃO 58mm -->
-  <div id="print-root" aria-hidden="true"></div>
-
-  <footer class="bottombar">
-    <small>💼 Sistema de Pedidos — offline-first (localStorage)</small>
-  </footer>
-
-  <script src="app.js"></script>
-</body>
-</html>
+        <button id="btnExportClientes" class="ghost">Export
