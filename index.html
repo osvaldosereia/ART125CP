@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema de Pedidos — Simples</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sistema de Pedidos</h1>
+    <nav class="menu" id="mainMenu">
+      <button id="navVender" class="primary">VENDER</button>
+      <button id="navProdutos">PRODUTOS</button>
+      <button id="navClientes">CLIENTES</button>
+      <button id="navBackup">BACKUP</button>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- ==== VENDER ==== -->
+    <section id="viewVender" class="view hidden">
+      <h2>Vender</h2>
+
+      <form id="formVenda" class="card" onsubmit="return false">
+        <div class="grid">
+          <label>Produto
+            <select id="saleProduto"></select>
+          </label>
+          <label>Valor (R$)
+            <input id="saleValor" type="number" min="0" step="0.01" placeholder="0,00">
+          </label>
+          <label>Forma de pagamento
+            <select id="salePagamento"></select>
+          </label>
+          <label>Cliente
+            <select id="saleCliente"></select>
+          </label>
+        </div>
+
+        <label>Observações
+          <textarea id="saleObs" rows="3" placeholder="Ex.: sem coentro"></textarea>
+        </label>
+
+        <div class="actions">
+          <button type="button" id="btnImprimir">Imprimir (50mm)</button>
+          <button type="button" id="btnSalvar" class="primary">Salvar pedido</button>
+          <button type="button" id="btnWhatsapp" class="success">Enviar WhatsApp</button>
+        </div>
+      </form>
+
+      <div id="printArea" class="print-ticket">
+        <div class="ticket">
+          <div class="t-center t-strong">Comprovante de Pedido</div>
+          <div class="t-small" id="ticketDate"></div>
+          <hr>
+          <div id="ticketBody"></div>
+          <hr>
+          <div class="t-center">Obrigado!</div>
+        </div>
+      </div>
+
+      <details class="card">
+        <summary>Pedidos salvos</summary>
+        <div id="ordersList" class="list"></div>
+      </details>
+    </section>
+
+    <!-- ==== PRODUTOS ==== -->
+    <section id="viewProdutos" class="view hidden">
+      <h2>Produtos</h2>
+
+      <form id="formProduto" class="card" onsubmit="return false">
+        <div class="grid">
+          <label>Nome
+            <input id="prodNome" placeholder="Ex.: Coxinha">
+          </label>
+          <label>Valor (R$)
+            <input id="prodValor" type="number" min="0" step="0.01" placeholder="0,00">
+          </label>
+        </div>
+        <div class="actions">
+          <button type="button" id="btnAddProduto" class="primary">Adicionar</button>
+        </div>
+      </form>
+
+      <div id="produtosList" class="list card"></div>
+    </section>
+
+    <!-- ==== CLIENTES ==== -->
+    <section id="viewClientes" class="view hidden">
+      <h2>Clientes</h2>
+
+      <form id="formCliente" class="card" onsubmit="return false">
+        <div class="grid">
+          <label>Nome
+            <input id="cliNome" placeholder="Nome do cliente">
+          </label>
+          <label>Telefone (apenas dígitos)
+            <input id="cliFone" placeholder="65999999999" inputmode="numeric" pattern="\d*">
+          </label>
+          <label>Endereço
+            <input id="cliEndereco" placeholder="Rua, número, bairro, cidade">
+          </label>
+          <label>Complemento
+            <input id="cliCompl" placeholder="Casa azul, bloco B, apto 100">
+          </label>
+        </div>
+        <div class="actions">
+          <button type="button" id="btnAddCliente" class="primary">Adicionar</button>
+          <label class="file">
+            <input type="file" id="csvImport" accept=".csv,text/csv">
+            <span>Importar CSV</span>
+          </label>
+        </div>
+      </form>
+
+      <div id="clientesList" class="list card"></div>
+    </section>
+
+    <!-- ==== BACKUP ==== -->
+    <section id="viewBackup" class="view hidden">
+      <h2>Backup</h2>
+
+      <div class="card">
+        <div class="actions">
+          <button type="button" id="btnExport" class="primary">Exportar dados (.json)</button>
+          <label class="file">
+            <input type="file" id="jsonImport" accept="application/json,.json">
+            <span>Importar dados (.json)</span>
+          </label>
+        </div>
+
+        <fieldset>
+          <legend>Modo de importação</legend>
+          <label><input type="radio" name="importMode" value="merge" checked> Mesclar (padrão)</label>
+          <label><input type="radio" name="importMode" value="replace"> Substituir tudo</label>
+        </fieldset>
+
+        <pre id="importPreview" class="preview" aria-live="polite"></pre>
+        <div id="importReport" class="report" aria-live="polite"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="bottombar">
+    <small>Client-side • localStorage • Impressão 50mm • Link único do pedido</small>
+  </footer>
+
+  <!-- Toasts -->
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
