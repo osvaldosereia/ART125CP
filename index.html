@@ -11,12 +11,12 @@
     --card:#ffffff;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; overflow-x:hidden}
   .wrap{max-width:980px;margin:0 auto;padding:16px}
   .top{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);z-index:9}
   .top .wrap{display:flex;gap:8px;align-items:center;justify-content:space-between}
   h1{font-size:18px;margin:12px 0}
-  .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer}
+  .btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer;white-space:nowrap}
   .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
   .btn.soft{background:var(--soft);border-color:var(--soft);color:#1e3a8a}
   .btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
@@ -24,13 +24,13 @@
   .btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
   .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   @media(max-width:720px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;overflow:hidden}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .row > *{flex:1}
   label{font-weight:600;margin:8px 0 4px;display:block}
   input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff}
-  table{width:100%;border-collapse:collapse}
-  th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:640px}
+  th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;word-wrap:break-word;overflow-wrap:anywhere}
   .stack{display:flex;flex-direction:column;gap:12px}
   .toolbar{display:flex;gap:8px;flex-wrap:wrap}
   .hidden{display:none}
@@ -44,6 +44,8 @@
   .link{color:var(--primary);text-decoration:none}
   .hr{height:1px;background:var(--line);margin:10px 0}
   .cta3{display:flex;gap:8px;flex-wrap:wrap}
+  /* >>> Responsivo de tabela: impede vazamento lateral no mobile */
+  .table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 </style>
 </head>
 <body>
@@ -124,7 +126,7 @@
         </div>
 
         <div class="hr"></div>
-        <div>
+        <div class="table-scroll">
           <table id="cartTable">
             <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th><th></th></tr></thead>
             <tbody></tbody>
@@ -160,7 +162,9 @@
 
       <div class="card">
         <h3>Clientes</h3>
-        <table id="tblClientes"><thead><tr><th>Nome</th><th>Telefone</th><th>Endereço</th><th></th></tr></thead><tbody></tbody></table>
+        <div class="table-scroll">
+          <table id="tblClientes"><thead><tr><th>Nome</th><th>Telefone</th><th>Endereço</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
       </div>
     </div>
 
@@ -179,7 +183,9 @@
 
       <div class="card">
         <h3>Produtos</h3>
-        <table id="tblProdutos"><thead><tr><th>Nome</th><th>Valor</th><th></th></tr></thead><tbody></tbody></table>
+        <div class="table-scroll">
+          <table id="tblProdutos"><thead><tr><th>Nome</th><th>Valor</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
       </div>
     </div>
 
@@ -229,9 +235,11 @@ const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 function brl(n){ return BRL.format(+n||0) }
 function telLink(num){ num = (num||"").replace(/\D+/g,""); if(!num) return null; if(num.length<=11) num = "55"+num; return "tel:+"+num }
 function waLink(num,msg){
-  const n = (num||"").replace(/\D+/g,""); if(!n) return null;
+  const n = (num||"").replace(/\D+/g,""); 
+  const base = `https://wa.me/`;
+  if(!n){ return `${base}?text=${encodeURIComponent(msg||"")}` }
   const full = (n.length<=11? "55"+n : n);
-  return `https://wa.me/${full}?text=${encodeURIComponent(msg||"")}`;
+  return `${base}${full}?text=${encodeURIComponent(msg||"")}`;
 }
 function mapsSearch(q){ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q||"")}` }
 
@@ -276,7 +284,7 @@ function renderClientes(){
   if(state.clientes.length===0){
     elC.selectForSale.innerHTML = '<option value="">-- cadastre clientes --</option>';
   }else{
-    for(const c of state.clientes.sort((a,b)=>a.nome.localeCompare(b.nome))){
+    for(const c of state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))){
       const opt = document.createElement('option');
       opt.value = c.id; opt.textContent = `${c.nome} — ${c.telefone||''}`;
       elC.selectForSale.appendChild(opt);
@@ -364,7 +372,7 @@ function renderProdutos(){
   if(state.produtos.length===0){
     elP.selectForSale.innerHTML = '<option value="">-- cadastre produtos --</option>';
   }else{
-    for(const p of state.produtos.sort((a,b)=>a.nome.localeCompare(b.nome))){
+    for(const p of state.produtos.slice().sort((a,b)=>a.nome.localeCompare(b.nome))){
       const opt = document.createElement('option');
       opt.value = p.id; opt.textContent = `${p.nome} — ${brl(p.valor)}`;
       elP.selectForSale.appendChild(opt);
@@ -399,7 +407,6 @@ function handleProdutosTable(e){
   const idEdit= e.target.getAttribute('data-edit');
   if(idDel){
     state.produtos = state.produtos.filter(x=>x.id!==idDel);
-    // também limpa do carrinho se houver
     state.cart = state.cart.filter(i=>i.productId!==idDel);
     saveAll(); renderProdutos(); renderCart(); toast("Produto removido"); return;
   }
@@ -515,6 +522,9 @@ function renderRelatorio(){
       </div>
       <div class="hr"></div>`;
 
+    const wrap = document.createElement('div');
+    wrap.className = 'table-scroll';
+
     const table = document.createElement('table');
     table.innerHTML = `<thead><tr><th>Quando</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th></th></tr></thead>`;
     const tb = document.createElement('tbody');
@@ -535,7 +545,8 @@ function renderRelatorio(){
       tb.appendChild(tr);
     }
     table.appendChild(tb);
-    box.appendChild(table);
+    wrap.appendChild(table);
+    box.appendChild(wrap);
     relEl.appendChild(box);
   }
 }
@@ -548,7 +559,7 @@ function handleRelatorio(e){
     state.pedidos = state.pedidos.filter(p=>p.id!==id); saveAll(); renderRelatorio(); toast("Pedido excluído"); return;
   }
   if(v){ openOrderViewer(v); return; }
-  if(s){ shareOrder(v=null, s); return; }
+  if(s){ shareOrder(s); return; }
 }
 
 function buildOrderPayload(order){
@@ -571,9 +582,10 @@ function encodeOrderToHash(order){
   return `#pedido=${b64}`;
 }
 
-function shareOrder(_unused, orderId){
+async function shareOrder(orderId){
   const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
   const link = location.origin + location.pathname + encodeOrderToHash(o);
+
   const lines = [];
   lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
   lines.push(`Cliente: ${o.client.nome}`);
@@ -585,8 +597,31 @@ function shareOrder(_unused, orderId){
   lines.push('');
   lines.push(`Ver pedido completo: ${link}`);
   const msg = lines.join('\n');
-  const url = waLink(o.client.telefone, msg) || `https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
+
+  // 1) Web Share API (melhor UX em iOS/Android)
+  if(navigator.share){
+    try{
+      await navigator.share({ title: 'Pedido', text: msg, url: link });
+      toast("Compartilhado");
+      return;
+    }catch(e){
+      // usuário cancelou ou não suportado — cair para WhatsApp
+    }
+  }
+
+  // 2) WhatsApp direto (sem popup bloqueado) + fallback copia
+  try{
+    const url = waLink(o.client.telefone, msg);
+    location.href = url; // evita bloqueio de popup
+  }catch{
+    // 3) Copia para área de transferência
+    try{
+      await navigator.clipboard.writeText(msg + '\n' + link);
+      toast("Copiado. Cole no WhatsApp.");
+    }catch{
+      alert("Copie e envie:\n\n" + msg + "\n" + link);
+    }
+  }
 }
 
 function openOrderViewer(orderId){
@@ -654,7 +689,9 @@ function renderPedidoView(o){
   const total = o.tt ?? o.it.reduce((s,i)=>s+i.q*i.pr,0);
   const tel = o.c?.t || '';
   const telHref = telLink(tel);
-  const waHref  = waLink(tel, `Olá, estou falando sobre seu pedido de ${when}.`);
+  /* >>> Mensagem fixa exigida */
+  const waMsg  = "Olá aqui e da Cesta Básica, estamos chegando";
+  const waHref = waLink(tel, waMsg);
   const mapHref = mapsSearch([o.c?.e||'', o.c?.x||''].join(' ').trim());
 
   const itemsHtml = o.it.map(i=>`
@@ -672,11 +709,13 @@ function renderPedidoView(o){
       <b>Endereço:</b> ${escapeHtml(o.c?.e||'')} ${escapeHtml(o.c?.x||'')}
     </div>
     <div class="hr"></div>
-    <table style="width:100%">
-      <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th></tr></thead>
-      <tbody>${itemsHtml}</tbody>
-      <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th>${brl(total)}</th></tr></tfoot>
-    </table>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Total</th></tr></thead>
+        <tbody>${itemsHtml}</tbody>
+        <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th>${brl(total)}</th></tr></tfoot>
+      </table>
+    </div>
     <div class="hr"></div>
     <div class="cta3">
       <a class="btn" ${telHref?`href="${telHref}"`:'aria-disabled="true"'}>Ligar</a>
