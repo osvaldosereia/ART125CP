@@ -11,7 +11,7 @@
     --card:#ffffff;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial; overflow-x:hidden}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;overflow-x:hidden}
   .wrap{max-width:980px;margin:0 auto;padding:16px}
   .top{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);z-index:9}
   .top .wrap{display:flex;gap:8px;align-items:center;justify-content:space-between}
@@ -40,12 +40,14 @@
   .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:.3s}
   .toast.show{opacity:1;pointer-events:auto}
   .badge{font-size:12px;padding:2px 6px;border-radius:8px;background:var(--soft);color:#1e3a8a;border:1px solid var(--soft)}
-  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
   .link{color:var(--primary);text-decoration:none}
   .hr{height:1px;background:var(--line);margin:10px 0}
   .cta3{display:flex;gap:8px;flex-wrap:wrap}
-  /* >>> Responsivo de tabela: impede vazamento lateral no mobile */
   .table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  /* destaque maior no viewer do pedido (cliente/endereço/complemento) */
+  #viewPedido #pedidoCard .cliente-info .valor{font-size:18px;font-weight:700;line-height:1.45;display:inline-block}
+  @media(min-width:720px){#viewPedido #pedidoCard .cliente-info .valor{font-size:20px}}
 </style>
 </head>
 <body>
@@ -76,7 +78,7 @@
         </div>
       </div>
       <div class="card">
-        <b>Dica rápida:</b> cadastre produtos e clientes primeiro. Em <i>Relatório</i>, compartilhe o pedido por WhatsApp — o link abre o pedido com <b>Ligar</b>, <b>WhatsApp</b> e <b>Google Maps</b>.
+        <b>Dica:</b> cadastre produtos e clientes primeiro. Em <i>Relatório</i>, compartilhe o pedido por WhatsApp — o link abre o pedido com <b>Ligar</b>, <b>WhatsApp</b> e <b>Google Maps</b>.
       </div>
     </div>
 
@@ -86,7 +88,9 @@
         <h3>Vender</h3>
         <div class="grid">
           <div>
-            <label>Cliente</label>
+            <label>Buscar cliente</label>
+            <input id="saleClientSearch" placeholder="Digite para filtrar…">
+            <label style="margin-top:8px">Cliente</label>
             <select id="saleClient"></select>
           </div>
           <div>
@@ -235,7 +239,7 @@ const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
 function brl(n){ return BRL.format(+n||0) }
 function telLink(num){ num = (num||"").replace(/\D+/g,""); if(!num) return null; if(num.length<=11) num = "55"+num; return "tel:+"+num }
 function waLink(num,msg){
-  const n = (num||"").replace(/\D+/g,""); 
+  const n = (num||"").replace(/\D+/g,"");
   const base = `https://wa.me/`;
   if(!n){ return `${base}?text=${encodeURIComponent(msg||"")}` }
   const full = (n.length<=11? "55"+n : n);
@@ -279,18 +283,36 @@ const elC = {
 };
 
 function renderClientes(){
-  // preencher select venda
-  elC.selectForSale.innerHTML = '';
-  if(state.clientes.length===0){
-    elC.selectForSale.innerHTML = '<option value="">-- cadastre clientes --</option>';
+  // select da venda (com filtro digitado)
+  const select = elC.selectForSale;
+  const search = (document.getElementById('saleClientSearch')?.value || '').toLowerCase().trim();
+
+  const list = state.clientes
+    .slice()
+    .sort((a,b)=>a.nome.localeCompare(b.nome))
+    .filter(c => {
+      if(!search) return true;
+      return (
+        (c.nome||'').toLowerCase().includes(search) ||
+        (c.telefone||'').toLowerCase().includes(search) ||
+        (c.endereco||'').toLowerCase().includes(search) ||
+        (c.complemento||'').toLowerCase().includes(search)
+      );
+    });
+
+  select.innerHTML = '';
+  if(list.length===0){
+    select.innerHTML = '<option value="">-- nenhum cliente encontrado --</option>';
   }else{
-    for(const c of state.clientes.slice().sort((a,b)=>a.nome.localeCompare(b.nome))){
+    for(const c of list){
       const opt = document.createElement('option');
-      opt.value = c.id; opt.textContent = `${c.nome} — ${c.telefone||''}`;
-      elC.selectForSale.appendChild(opt);
+      opt.value = c.id;
+      opt.textContent = c.nome; // sem juntar com telefone
+      select.appendChild(opt);
     }
   }
-  // tabela
+
+  // tabela de clientes (cada campo isolado, sem unir)
   elC.tbl.innerHTML = '';
   for(const c of state.clientes){
     const tr = document.createElement('tr');
@@ -328,7 +350,6 @@ function handleClientesTable(e){
     state.clientes = state.clientes.filter(x=>x.id!==idDel); saveAll(); renderClientes(); toast("Cliente removido"); return;
   }
   if(idEdit){
-    // coletar campos da linha
     const inputs = elC.tbl.querySelectorAll(`input[data-id="${idEdit}"]`);
     const c = state.clientes.find(x=>x.id===idEdit); if(!c) return;
     inputs.forEach(inp => c[inp.getAttribute('data-k')] = inp.value.trim());
@@ -343,7 +364,7 @@ function importClientesCSV(file){
     const lines = txt.split(/\r?\n/).filter(Boolean);
     let added = 0;
     for(const line of lines){
-      const parts = line.split(/[,;]\s*/); // vírgula ou ponto-e-vírgula
+      const parts = line.split(/[,;]\s*/);
       const [nome, telefone, endereco, complemento] = parts;
       if(nome){
         state.clientes.push({id:uid(), nome:nome.trim(), telefone:(telefone||'').trim(), endereco:(endereco||'').trim(), complemento:(complemento||'').trim()});
@@ -353,7 +374,7 @@ function importClientesCSV(file){
     saveAll(); renderClientes();
     toast(`Importados ${added} clientes`);
   };
-  reader.readAsText(file, 'utf-8');
+  reader.readAsText(file,'utf-8');
 }
 
 /* ===============================
@@ -367,7 +388,6 @@ const elP = {
 };
 
 function renderProdutos(){
-  // select para venda
   elP.selectForSale.innerHTML = '';
   if(state.produtos.length===0){
     elP.selectForSale.innerHTML = '<option value="">-- cadastre produtos --</option>';
@@ -378,7 +398,6 @@ function renderProdutos(){
       elP.selectForSale.appendChild(opt);
     }
   }
-  // tabela
   elP.tbl.innerHTML = '';
   for(const p of state.produtos){
     const tr = document.createElement('tr');
@@ -397,9 +416,8 @@ function addProduto(){
   const nome = elP.nome.value.trim();
   const valor = parseFloat(elP.valor.value);
   if(!nome || isNaN(valor)){ toast("Informe nome e valor"); return }
-  state.produtos.push({id:uid(), nome, valor: +valor});
-  saveAll(); renderProdutos(); elP.nome.value=''; elP.valor.value='';
-  toast("Produto salvo");
+  state.produtos.push({id:uid(), nome, valor:+valor});
+  saveAll(); renderProdutos(); elP.nome.value=''; elP.valor.value=''; toast("Produto salvo");
 }
 
 function handleProdutosTable(e){
@@ -413,9 +431,9 @@ function handleProdutosTable(e){
   if(idEdit){
     const inputs = elP.tbl.querySelectorAll(`input[data-id="${idEdit}"]`);
     const p = state.produtos.find(x=>x.id===idEdit); if(!p) return;
-    inputs.forEach(inp => {
+    inputs.forEach(inp=>{
       const k = inp.getAttribute('data-k');
-      p[k] = (k==='valor') ? +parseFloat(inp.value||0) : inp.value.trim();
+      p[k] = (k==='valor')? +parseFloat(inp.value||0) : inp.value.trim();
     });
     saveAll(); renderProdutos(); renderCart(); toast("Produto atualizado"); return;
   }
@@ -442,7 +460,7 @@ function addToCart(){
   const prod = state.produtos.find(p=>p.id===pid);
   if(!prod){ toast("Selecione um produto"); return }
   const ex = state.cart.find(i=>i.productId===pid);
-  if(ex){ ex.qty += qty } else { state.cart.push({productId:pid, qty, price: +prod.valor, name: prod.nome}) }
+  if(ex){ ex.qty += qty } else { state.cart.push({productId:pid, qty, price:+prod.valor, name:prod.nome}) }
   renderCart(); toast("Item adicionado");
 }
 
@@ -483,7 +501,7 @@ function saveSale(){
   const order = {
     id: uid(),
     ts: Date.now(),
-    client: { id: cli.id, nome: cli.nome, telefone: cli.telefone||'', endereco: cli.endereco||'', complemento: cli.complemento||'' },
+    client: { id:cli.id, nome:cli.nome, telefone:cli.telefone||'', endereco:cli.endereco||'', complemento:cli.complemento||'' },
     items: state.cart.map(i=>({productId:i.productId, name:i.name, qty:i.qty, price:+i.price})),
     payment: elV.pay.value,
     route: elV.route.value,
@@ -499,17 +517,11 @@ function saveSale(){
 const relEl = document.getElementById('relContent');
 
 function renderRelatorio(){
-  // Agrupar por rota
   const byRoute = {};
-  for(const o of state.pedidos){
-    (byRoute[o.route] ||= []).push(o);
-  }
+  for(const o of state.pedidos){ (byRoute[o.route] ||= []).push(o); }
   const routes = Object.keys(byRoute).sort();
   relEl.innerHTML = '';
-  if(routes.length===0){
-    relEl.innerHTML = '<div class="pill">Ainda sem pedidos.</div>';
-    return;
-  }
+  if(routes.length===0){ relEl.innerHTML = '<div class="pill">Ainda sem pedidos.</div>'; return; }
 
   for(const r of routes){
     const box = document.createElement('div');
@@ -519,12 +531,9 @@ function renderRelatorio(){
     box.innerHTML = `<div class="row" style="justify-content:space-between">
         <div><span class="route">Rota ${escapeHtml(r)}</span> • <span class="badge">${pedidos.length} pedidos</span></div>
         <div><b>Total: ${brl(totalRoute)}</b></div>
-      </div>
-      <div class="hr"></div>`;
+      </div><div class="hr"></div>`;
 
-    const wrap = document.createElement('div');
-    wrap.className = 'table-scroll';
-
+    const wrap = document.createElement('div'); wrap.className = 'table-scroll';
     const table = document.createElement('table');
     table.innerHTML = `<thead><tr><th>Quando</th><th>Cliente</th><th>Pagamento</th><th>Total</th><th></th></tr></thead>`;
     const tb = document.createElement('tbody');
@@ -555,19 +564,16 @@ function handleRelatorio(e){
   const id = e.target.getAttribute('data-del');
   const v  = e.target.getAttribute('data-view');
   const s  = e.target.getAttribute('data-share');
-  if(id){
-    state.pedidos = state.pedidos.filter(p=>p.id!==id); saveAll(); renderRelatorio(); toast("Pedido excluído"); return;
-  }
+  if(id){ state.pedidos = state.pedidos.filter(p=>p.id!==id); saveAll(); renderRelatorio(); toast("Pedido excluído"); return; }
   if(v){ openOrderViewer(v); return; }
   if(s){ shareOrder(s); return; }
 }
 
 function buildOrderPayload(order){
-  // payload enxuto pro link
   const slim = {
     id: order.id,
     ts: order.ts,
-    c: { n: order.client.nome, t: order.client.telefone||'', e: order.client.endereco||'', x: order.client.complemento||'' },
+    c: { n:order.client.nome, t:order.client.telefone||'', e:order.client.endereco||'', x:order.client.complemento||'' },
     r: order.route,
     p: order.payment,
     it: order.items.map(i=>({n:i.name,q:i.qty,pr:i.price})),
@@ -589,7 +595,8 @@ async function shareOrder(orderId){
   const lines = [];
   lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
   lines.push(`Cliente: ${o.client.nome}`);
-  if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco} ${o.client.complemento||''}`.trim());
+  if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco}`);
+  if(o.client.complemento) lines.push(`Complemento: ${o.client.complemento}`);
   lines.push(`Rota: ${o.route} • Pagamento: ${o.payment}`);
   lines.push('Itens:');
   for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)} = ${brl(it.qty*it.price)}`) }
@@ -598,36 +605,21 @@ async function shareOrder(orderId){
   lines.push(`Ver pedido completo: ${link}`);
   const msg = lines.join('\n');
 
-  // 1) Web Share API (melhor UX em iOS/Android)
   if(navigator.share){
-    try{
-      await navigator.share({ title: 'Pedido', text: msg, url: link });
-      toast("Compartilhado");
-      return;
-    }catch(e){
-      // usuário cancelou ou não suportado — cair para WhatsApp
-    }
+    try{ await navigator.share({title:'Pedido',text:msg,url:link}); toast("Compartilhado"); return; }catch{}
   }
-
-  // 2) WhatsApp direto (sem popup bloqueado) + fallback copia
   try{
     const url = waLink(o.client.telefone, msg);
     location.href = url; // evita bloqueio de popup
   }catch{
-    // 3) Copia para área de transferência
-    try{
-      await navigator.clipboard.writeText(msg + '\n' + link);
-      toast("Copiado. Cole no WhatsApp.");
-    }catch{
-      alert("Copie e envie:\n\n" + msg + "\n" + link);
-    }
+    try{ await navigator.clipboard.writeText(msg+'\n'+link); toast("Copiado. Cole no WhatsApp."); }
+    catch{ alert("Copie e envie:\n\n"+msg+"\n"+link); }
   }
 }
 
 function openOrderViewer(orderId){
   const o = state.pedidos.find(x=>x.id===orderId); if(!o){ toast("Pedido não encontrado"); return }
   location.hash = encodeOrderToHash(o);
-  // hash change vai renderizar
 }
 
 /* ===============================
@@ -664,7 +656,7 @@ fileImport.addEventListener('change', (e)=>{
 });
 
 /* ===============================
-   VISOR DE PEDIDO PELO LINK (#pedido=...)
+   VISOR (#pedido=...)
 =================================*/
 function tryRenderPedidoFromHash(){
   const h = location.hash || '';
@@ -689,10 +681,10 @@ function renderPedidoView(o){
   const total = o.tt ?? o.it.reduce((s,i)=>s+i.q*i.pr,0);
   const tel = o.c?.t || '';
   const telHref = telLink(tel);
-  /* >>> Mensagem fixa exigida */
-  const waMsg  = "Olá aqui e da Cesta Básica, estamos chegando";
+  const waMsg  = "Olá aqui e da Cesta Básica, estamos chegando"; // mensagem exigida
   const waHref = waLink(tel, waMsg);
-  const mapHref = mapsSearch([o.c?.e||'', o.c?.x||''].join(' ').trim());
+  const addr   = (o.c?.e || '').trim();
+  const mapHref = addr ? mapsSearch(addr) : null; // só ENDEREÇO (sem complemento)
 
   const itemsHtml = o.it.map(i=>`
     <tr><td>${escapeHtml(i.n)}</td><td>${i.q}</td><td>${brl(i.pr)}</td><td>${brl(i.q*i.pr)}</td></tr>
@@ -705,8 +697,10 @@ function renderPedidoView(o){
       <div><span class="badge mono">${escapeHtml(o.id||'')}</span></div>
     </div>
     <div class="hr"></div>
-    <div><b>Cliente:</b> ${escapeHtml(o.c?.n||'')}<br>
-      <b>Endereço:</b> ${escapeHtml(o.c?.e||'')} ${escapeHtml(o.c?.x||'')}
+    <div class="cliente-info">
+      <div><b>Cliente:</b> <span class="valor">${escapeHtml(o.c?.n||'')}</span></div>
+      <div><b>Endereço:</b> <span class="valor">${escapeHtml(o.c?.e||'')}</span></div>
+      ${o.c?.x ? `<div><b>Complemento:</b> <span class="valor">${escapeHtml(o.c.x)}</span></div>` : ``}
     </div>
     <div class="hr"></div>
     <div class="table-scroll">
@@ -720,7 +714,7 @@ function renderPedidoView(o){
     <div class="cta3">
       <a class="btn" ${telHref?`href="${telHref}"`:'aria-disabled="true"'}>Ligar</a>
       <a class="btn primary" target="_blank" ${waHref?`href="${waHref}"`:'aria-disabled="true"'}>WhatsApp</a>
-      <a class="btn soft" target="_blank" href="${mapHref}">Google Maps</a>
+      <a class="btn soft" target="_blank" ${mapHref?`href="${mapHref}"`:'aria-disabled="true"'}>Google Maps</a>
     </div>
     <div class="hr"></div>
     <a class="link" href="${location.origin+location.pathname}">Voltar para o painel</a>
@@ -749,6 +743,10 @@ document.getElementById('btnAddCliente').onclick = addCliente;
 elC.tbl.addEventListener('click', handleClientesTable);
 elC.csv.addEventListener('change', e=>{ if(e.target.files?.[0]) importClientesCSV(e.target.files[0]) });
 
+// filtro de cliente (venda)
+const saleClientSearch = document.getElementById('saleClientSearch');
+if (saleClientSearch) saleClientSearch.addEventListener('input', renderClientes);
+
 document.getElementById('btnAddProduto').onclick = addProduto;
 elP.tbl.addEventListener('click', handleProdutosTable);
 
@@ -759,14 +757,13 @@ elV.save.onclick = saveSale;
 
 document.getElementById('relContent').addEventListener('click', handleRelatorio);
 
-document.getElementById('btnBackup').insertAdjacentHTML('afterend',
-  '<button class="btn" id="btnImport">Importar</button>');
+document.getElementById('btnBackup').insertAdjacentHTML('afterend','<button class="btn" id="btnImport">Importar</button>');
 document.getElementById('btnImport').onclick = ()=>fileImport.click();
 
 /* ===============================
    INÍCIO
 =================================*/
-window.addEventListener('hashchange', ()=>{ if(!tryRenderPedidoFromHash()) { /* nada */ } });
+window.addEventListener('hashchange', ()=>{ tryRenderPedidoFromHash(); });
 if(!tryRenderPedidoFromHash()){ show(VIEWS.home); renderClientes(); renderProdutos(); }
 
 </script>
