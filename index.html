@@ -593,13 +593,13 @@ async function shareOrder(orderId){
   const link = location.origin + location.pathname + encodeOrderToHash(o);
 
   const lines = [];
-  lines.push(`🧺 *Pedido* (${new Date(o.ts).toLocaleString('pt-BR')})`);
   lines.push(`Cliente: ${o.client.nome}`);
-  if(o.client.endereco) lines.push(`Endereço: ${o.client.endereco}`);
-  if(o.client.complemento) lines.push(`Complemento: ${o.client.complemento}`);
-  lines.push(`Rota: ${o.route} • Pagamento: ${o.payment}`);
+  ----
+  if(o.client.endereco) lines.push(`CODIGO: ${o.client.endereco}`);
+  if(o.client.complemento) lines.push(` ${o.client.complemento}`);
+  • Pagamento: ${o.payment}`);
   lines.push('Itens:');
-  for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)} = ${brl(it.qty*it.price)}`) }
+  for(const it of o.items){ lines.push(`- ${it.qty} × ${it.name} — ${brl(it.price)}`) }
   lines.push(`Total: *${brl(o.total)}*`);
   lines.push('');
   lines.push(`Ver pedido completo: ${link}`);
